@@ -368,30 +368,3 @@ For more details, please check the [Official Documentation](https://service.fast
 <a href="https://github.com/1014TaoTao/FastapiAdmin/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=1014TaoTao/FastapiAdmin"/>
 </a>
-
-## 🙏 Special Thanks
-
-Thanks to the contributions and support of the following open-source projects:
-
-- [FastAPI](https://fastapi.tiangolo.com/)
-- [Pydantic](https://docs.pydantic.dev/)
-- [SQLAlchemy](https://www.sqlalchemy.org/)
-- [APScheduler](https://github.com/agronholm/apscheduler)
-- [Vue3](https://cn.vuejs.org/)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Vite](https://github.com/vitejs/vite)
-- [Element Plus](https://element-plus.org/)
-- [UniApp](https://uniapp.dcloud.net.cn/)
-- [Wot-Design-UI](https://wot-ui.cn/)
-
-## 🎨 Community
-
-| WeChat QR Code | Group QR Code | WeChat Pay QR Code |
-| --- | --- | --- |
-| ![WeChat QR Code](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/wechat.jpg) | ![Group QR Code](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/group.jpg) | ![WeChat Pay QR Code](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/wechatPay.jpg) |
-
-## ❤️ Support the Project
-
-If you like this project, please give it a ⭐️ Star to show your support! Thank you very much!
-
-[![Stargazers over time](https://starchart.cc/1014TaoTao/FastapiAdmin.svg?variant=adaptive)](https://starchart.cc/1014TaoTao/FastapiAdmin)

@@ -362,36 +362,3 @@ docker compose down
 ## ℹ️ 帮助
 
 更多详情请查看 [官方文档](https://service.fastapiadmin.com)
-
-## 👥 贡献者
-
-<a href="https://github.com/1014TaoTao/FastapiAdmin/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=1014TaoTao/FastapiAdmin"/>
-</a>
-
-## 🙏 特别鸣谢
-
-感谢以下开源项目的贡献和支持：
-
-- [FastAPI](https://fastapi.tiangolo.com/)
-- [Pydantic](https://docs.pydantic.dev/)
-- [SQLAlchemy](https://www.sqlalchemy.org/)
-- [APScheduler](https://github.com/agronholm/apscheduler)
-- [Vue3](https://cn.vuejs.org/)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Vite](https://github.com/vitejs/vite)
-- [Element Plus](https://element-plus.org/)
-- [UniApp](https://uniapp.dcloud.net.cn/)
-- [Wot-Design-UI](https://wot-ui.cn/)
-
-## 🎨 社区交流
-
-| 微信二维码 | 群组二维码 | 微信支付二维码 |
-| --- | --- | --- |
-| ![微信二维码](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/wechat.jpg) | ![群组二维码](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/group.jpg) | ![微信支付二维码](https://gitee.com/tao__tao/FastDocs/raw/main/src/public/wechatPay.jpg) |
-
-## ❤️ 支持项目
-
-如果你喜欢这个项目，请给我一个 ⭐️ Star 支持一下吧！非常感谢！
-
-[![Stargazers over time](https://starchart.cc/1014TaoTao/FastapiAdmin.svg?variant=adaptive)](https://starchart.cc/1014TaoTao/FastapiAdmin)
