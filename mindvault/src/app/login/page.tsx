@@ -23,9 +23,11 @@ import { Spinner } from "@/components/ui/spinner";
 import {
   CaptchaInfo,
   LoginFormData,
+  LoginResult,
   fetchCaptcha,
   login,
 } from "@/lib/api/auth";
+import { Auth } from "@/lib/auth";
 
 const loginSchema = z.object({
   username: z.string().min(1, "请输入用户名"),
@@ -89,7 +91,11 @@ export default function LoginPage() {
 
     startTransition(async () => {
       try {
-        await login(payload);
+        const result: LoginResult = await login(payload);
+
+        // 使用 Auth 工具类存储 token（根据“记住我”状态自动选择存储位置）
+        Auth.setTokens(result.access_token, result.refresh_token, values.remember);
+
         // 登录成功，跳转首页
         router.push("/");
       } catch (e) {
