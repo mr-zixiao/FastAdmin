@@ -1,4 +1,4 @@
-<!-- 演示示例 -->
+<!-- 文档切片明细 -->
 <template>
   <div class="app-container">
     <!-- 搜索区域 -->
@@ -10,8 +10,23 @@
         :inline="true"
         @submit.prevent="handleQuery"
       >
-        <el-form-item prop="name" label="名称">
-          <el-input v-model="queryFormData.name" placeholder="请输入名称" clearable />
+        <el-form-item label="关联文档主表ID" prop="doc_id">
+          <el-input v-model="queryFormData.doc_id" placeholder="请输入关联文档主表ID" clearable />
+        </el-form-item>
+        <el-form-item label="关联向量数据库中的唯一ID" prop="vector_id">
+          <el-input v-model="queryFormData.vector_id" placeholder="请输入关联向量数据库中的唯一ID" clearable />
+        </el-form-item>
+        <el-form-item label="切片原文内容" prop="content">
+          <el-input v-model="queryFormData.content" placeholder="请输入切片原文内容" clearable />
+        </el-form-item>
+        <el-form-item label="所在文档原始页码" prop="page_number">
+          <el-input v-model="queryFormData.page_number" placeholder="请输入所在文档原始页码" clearable />
+        </el-form-item>
+        <el-form-item label="在原文档中的切片顺序" prop="chunk_order">
+          <el-input v-model="queryFormData.chunk_order" placeholder="请输入在原文档中的切片顺序" clearable />
+        </el-form-item>
+        <el-form-item label="该切片的Token预估数量" prop="token_count">
+          <el-input v-model="queryFormData.token_count" placeholder="请输入该切片的Token预估数量" clearable />
         </el-form-item>
         <el-form-item prop="status" label="状态">
           <el-select
@@ -23,6 +38,12 @@
             <el-option value="0" label="启用" />
             <el-option value="1" label="停用" />
           </el-select>
+        </el-form-item>
+        <el-form-item v-if="isExpand" prop="created_time" label="创建时间">
+          <DatePicker v-model="createdDateRange" @update:model-value="handleCreatedDateRangeChange" />
+        </el-form-item>
+        <el-form-item v-if="isExpand" prop="updated_time" label="更新时间">
+          <DatePicker v-model="updatedDateRange" @update:model-value="handleUpdatedDateRangeChange" />
         </el-form-item>
         <el-form-item v-if="isExpand" prop="created_id" label="创建人">
           <UserTableSelect
@@ -38,23 +59,10 @@
             @clear-click="handleQuery"
           />
         </el-form-item>
-        <!-- 时间范围，收起状态下隐藏 -->
-        <el-form-item v-if="isExpand" prop="created_time" label="创建时间">
-          <DatePicker
-            v-model="createdDateRange"
-            @update:model-value="handleCreatedDateRangeChange"
-          />
-        </el-form-item>
-        <el-form-item v-if="isExpand" prop="updated_time" label="更新时间">
-          <DatePicker
-            v-model="updatedDateRange"
-            @update:model-value="handleUpdatedDateRangeChange"
-          />
-        </el-form-item>
         <!-- 查询、重置、展开/收起按钮 -->
         <el-form-item>
           <el-button
-            v-hasPerm="['module_gencode:demo:query']"
+            v-hasPerm="['module_gencode:sys_document_chunks:query']"
             type="primary"
             icon="search"
             @click="handleQuery"
@@ -62,7 +70,7 @@
             查询
           </el-button>
           <el-button
-            v-hasPerm="['module_gencode:demo:query']"
+            v-hasPerm="['module_gencode:sys_document_chunks:query']"
             icon="refresh"
             @click="handleResetQuery"
           >
@@ -91,8 +99,8 @@
       <template #header>
         <div class="card-header">
           <span>
-            演示示例列表
-            <el-tooltip content="演示示例列表">
+            文档切片明细列表
+            <el-tooltip content="文档切片明细列表">
               <QuestionFilled class="w-4 h-4 mx-1" />
             </el-tooltip>
           </span>
@@ -105,7 +113,7 @@
           <el-row :gutter="10">
             <el-col :span="1.5">
               <el-button
-                v-hasPerm="['module_gencode:demo:create']"
+                v-hasPerm="['module_gencode:sys_document_chunks:create']"
                 type="success"
                 icon="plus"
                 @click="handleOpenDialog('create')"
@@ -115,7 +123,7 @@
             </el-col>
             <el-col :span="1.5">
               <el-button
-                v-hasPerm="['module_gencode:demo:delete']"
+                v-hasPerm="['module_gencode:sys_document_chunks:delete']"
                 type="danger"
                 icon="delete"
                 :disabled="selectIds.length === 0"
@@ -125,16 +133,16 @@
               </el-button>
             </el-col>
             <el-col :span="1.5">
-              <el-dropdown v-hasPerm="['module_gencode:demo:patch']" trigger="click">
+              <el-dropdown v-hasPerm="['module_gencode:sys_document_chunks:batch']" trigger="click">
                 <el-button type="default" :disabled="selectIds.length === 0" icon="ArrowDown">
                   更多
                 </el-button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item icon="Check" @click="handleMoreClick('0')">
+                    <el-dropdown-item :icon="Check" @click="handleMoreClick('0')">
                       批量启用
                     </el-dropdown-item>
-                    <el-dropdown-item icon="CircleClose" @click="handleMoreClick('1')">
+                    <el-dropdown-item :icon="CircleClose" @click="handleMoreClick('1')">
                       批量停用
                     </el-dropdown-item>
                   </el-dropdown-menu>
@@ -148,7 +156,7 @@
             <el-col :span="1.5">
               <el-tooltip content="导入">
                 <el-button
-                  v-hasPerm="['module_gencode:demo:import']"
+                  v-hasPerm="['module_gencode:sys_document_chunks:import']"
                   type="success"
                   icon="upload"
                   circle
@@ -159,7 +167,7 @@
             <el-col :span="1.5">
               <el-tooltip content="导出">
                 <el-button
-                  v-hasPerm="['module_gencode:demo:export']"
+                  v-hasPerm="['module_gencode:sys_document_chunks:export']"
                   type="warning"
                   icon="download"
                   circle
@@ -181,7 +189,7 @@
             <el-col :span="1.5">
               <el-tooltip content="刷新">
                 <el-button
-                  v-hasPerm="['module_gencode:demo:query']"
+                  v-hasPerm="['module_gencode:sys_document_chunks:query']"
                   type="primary"
                   icon="refresh"
                   circle
@@ -212,8 +220,7 @@
         :data="pageTableData"
         highlight-current-row
         class="data-table__content"
-        height="500"
-        max-height="500"
+        :height="450"
         border
         stripe
         @selection-change="handleSelectionChange"
@@ -237,58 +244,37 @@
             {{ (queryFormData.page_no - 1) * queryFormData.page_size + scope.$index + 1 }}
           </template>
         </el-table-column>
-        <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'name')?.show"
-          label="名称"
-          prop="name"
-          min-width="140"
-        />
-        <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'status')?.show"
-          label="状态"
-          prop="status"
-          min-width="120"
-        >
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'doc_id')?.show" label="关联文档主表ID" prop="doc_id" min-width="140">
+        </el-table-column>
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'vector_id')?.show" label="关联向量数据库中的唯一ID" prop="vector_id" min-width="140">
+        </el-table-column>
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'content')?.show" label="切片原文内容" prop="content" min-width="140">
+        </el-table-column>
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'page_number')?.show" label="所在文档原始页码" prop="page_number" min-width="140">
+        </el-table-column>
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'chunk_order')?.show" label="在原文档中的切片顺序" prop="chunk_order" min-width="140">
+        </el-table-column>
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'token_count')?.show" label="该切片的Token预估数量" prop="token_count" min-width="140">
+        </el-table-column>
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'status')?.show" label="状态(0:启用 1:禁用)" prop="status" min-width="140">
           <template #default="scope">
-            <el-tag :type="scope.row.status ? 'success' : 'info'">
-              {{ scope.row.status ? "启用" : "停用" }}
+            <el-tag :type="scope.row.status == '0' ? 'success' : 'info'">
+              {{ scope.row.status == '0' ? '启用' : '停用' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'description')?.show"
-          label="描述"
-          prop="description"
-          min-width="140"
-        />
-        <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'created_time')?.show"
-          label="创建时间"
-          prop="created_time"
-          min-width="180"
-        />
-        <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'updated_time')?.show"
-          label="更新时间"
-          prop="updated_time"
-          min-width="180"
-        />
-        <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'created_id')?.show"
-          label="创建人"
-          prop="created_id"
-          min-width="120"
-        >
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'description')?.show" label="备注/描述" prop="description" min-width="140">
+        </el-table-column>
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'created_time')?.show" label="创建时间" prop="created_time" min-width="140">
+        </el-table-column>
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'updated_time')?.show" label="更新时间" prop="updated_time" min-width="140">
+        </el-table-column>
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'created_id')?.show" label="创建人ID" prop="created_id" min-width="140">
           <template #default="scope">
             <el-tag>{{ scope.row.created_by?.name }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'updated_id')?.show"
-          label="更新人"
-          prop="updated_id"
-          min-width="120"
-        >
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'updated_id')?.show" label="更新人ID" prop="updated_id" min-width="140">
           <template #default="scope">
             <el-tag>{{ scope.row.updated_by?.name }}</el-tag>
           </template>
@@ -302,7 +288,7 @@
         >
           <template #default="scope">
             <el-button
-              v-hasPerm="['module_gencode:demo:detail']"
+              v-hasPerm="['module_gencode:sys_document_chunks:detail']"
               type="info"
               size="small"
               link
@@ -312,7 +298,7 @@
               详情
             </el-button>
             <el-button
-              v-hasPerm="['module_gencode:demo:update']"
+              v-hasPerm="['module_gencode:sys_document_chunks:update']"
               type="primary"
               size="small"
               link
@@ -322,7 +308,7 @@
               编辑
             </el-button>
             <el-button
-              v-hasPerm="['module_gencode:demo:delete']"
+              v-hasPerm="['module_gencode:sys_document_chunks:delete']"
               type="danger"
               size="small"
               link
@@ -355,45 +341,75 @@
       <!-- 详情 -->
       <template v-if="dialogVisible.type === 'detail'">
         <el-descriptions :column="4" border>
-          <el-descriptions-item label="名称" :span="2">
-            {{ detailFormData.name }}
-          </el-descriptions-item>
-          <el-descriptions-item label="状态" :span="2">
-            <el-tag :type="detailFormData.status ? 'success' : 'danger'">
-              {{ detailFormData.status ? "启用" : "停用" }}
-            </el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item label="描述" :span="2">
-            {{ detailFormData.description }}
-          </el-descriptions-item>
-          <el-descriptions-item label="创建人" :span="2">
-            {{ detailFormData.created_by?.name }}
-          </el-descriptions-item>
-          <el-descriptions-item label="更新人" :span="2">
-            {{ detailFormData.updated_by?.name }}
-          </el-descriptions-item>
-          <el-descriptions-item label="创建时间" :span="2">
-            {{ detailFormData.created_time }}
-          </el-descriptions-item>
-          <el-descriptions-item label="更新时间" :span="2">
-            {{ detailFormData.updated_time }}
-          </el-descriptions-item>
+            <el-descriptions-item label="主键ID" :span="2">
+              {{ detailFormData.id }}
+            </el-descriptions-item>
+            <el-descriptions-item label="UUID全局唯一标识" :span="2">
+              {{ detailFormData.uuid }}
+            </el-descriptions-item>
+            <el-descriptions-item label="关联文档主表ID" :span="2">
+              {{ detailFormData.doc_id }}
+            </el-descriptions-item>
+            <el-descriptions-item label="关联向量数据库中的唯一ID" :span="2">
+              {{ detailFormData.vector_id }}
+            </el-descriptions-item>
+            <el-descriptions-item label="切片原文内容" :span="2">
+              {{ detailFormData.content }}
+            </el-descriptions-item>
+            <el-descriptions-item label="所在文档原始页码" :span="2">
+              {{ detailFormData.page_number }}
+            </el-descriptions-item>
+            <el-descriptions-item label="在原文档中的切片顺序" :span="2">
+              {{ detailFormData.chunk_order }}
+            </el-descriptions-item>
+            <el-descriptions-item label="该切片的Token预估数量" :span="2">
+              {{ detailFormData.token_count }}
+            </el-descriptions-item>
+            <el-descriptions-item label="状态" :span="2">
+              <el-tag :type="detailFormData.status == '0' ? 'success' : 'danger'">
+                {{ detailFormData.status == '0' ? "启用" : "停用" }}
+              </el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item label="备注/描述" :span="2">
+              {{ detailFormData.description }}
+            </el-descriptions-item>
+            <el-descriptions-item label="创建时间" :span="2">
+              {{ detailFormData.created_time }}
+            </el-descriptions-item>
+            <el-descriptions-item label="更新时间" :span="2">
+              {{ detailFormData.updated_time }}
+            </el-descriptions-item>
+            <el-descriptions-item label="创建人" :span="2">
+              {{ detailFormData.created_by?.name }}
+            </el-descriptions-item>
+            <el-descriptions-item label="更新人" :span="2">
+              {{ detailFormData.updated_by?.name }}
+            </el-descriptions-item>
         </el-descriptions>
       </template>
+
       <!-- 新增、编辑表单 -->
       <template v-else>
-        <el-form
-          ref="dataFormRef"
-          :model="formData"
-          :rules="rules"
-          label-suffix=":"
-          label-width="auto"
-          label-position="right"
-        >
-          <el-form-item label="名称" prop="name">
-            <el-input v-model="formData.name" placeholder="请输入名称" :maxlength="50" />
+        <el-form ref="dataFormRef" :model="formData" :rules="rules" label-suffix=":" label-width="auto" label-position="right">
+          <el-form-item label="关联文档主表ID" prop="doc_id" :required="false">
+            <el-input v-model="formData.doc_id" placeholder="请输入关联文档主表ID" />
           </el-form-item>
-          <el-form-item label="状态" prop="status">
+          <el-form-item label="关联向量数据库中的唯一ID" prop="vector_id" :required="false">
+            <el-input v-model="formData.vector_id" placeholder="请输入关联向量数据库中的唯一ID" />
+          </el-form-item>
+          <el-form-item label="切片原文内容" prop="content" :required="false">
+            <el-input v-model="formData.content" placeholder="请输入切片原文内容" />
+          </el-form-item>
+          <el-form-item label="所在文档原始页码" prop="page_number" :required="false">
+            <el-input v-model="formData.page_number" placeholder="请输入所在文档原始页码" />
+          </el-form-item>
+          <el-form-item label="在原文档中的切片顺序" prop="chunk_order" :required="false">
+            <el-input v-model="formData.chunk_order" placeholder="请输入在原文档中的切片顺序" />
+          </el-form-item>
+          <el-form-item label="该切片的Token预估数量" prop="token_count" :required="false">
+            <el-input v-model="formData.token_count" placeholder="请输入该切片的Token预估数量" />
+          </el-form-item>
+          <el-form-item label="状态" prop="status" :required="true">
             <el-radio-group v-model="formData.status">
               <el-radio value="0">启用</el-radio>
               <el-radio value="1">停用</el-radio>
@@ -444,72 +460,88 @@
 
 <script setup lang="ts">
 defineOptions({
-  name: "Demo",
+  name: "SysDocumentChunks",
   inheritAttrs: false,
 });
 
-import { ref, reactive, onMounted } from "vue";
-import { ElMessage, ElMessageBox } from "element-plus";
-import { ResultEnum } from "@/enums/api/result.enum";
-import DemoAPI, { DemoTable, DemoForm, DemoPageQuery } from "@/api/module_gencode/demo";
-import ImportModal from "@/components/CURD/ImportModal.vue";
-import ExportModal from "@/components/CURD/ExportModal.vue";
+import { ref, reactive, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { QuestionFilled, ArrowUp, ArrowDown, Check, CircleClose } from '@element-plus/icons-vue'
+import { formatToDateTime } from "@/utils/dateUtil";
+import { useDictStore } from "@/store";
+import { ResultEnum } from '@/enums/api/result.enum'
 import DatePicker from "@/components/DatePicker/index.vue";
 import type { IContentConfig } from "@/components/CURD/types";
-import { QuestionFilled, ArrowUp, ArrowDown } from "@element-plus/icons-vue";
-import { formatToDateTime } from "@/utils/dateUtil";
+import ImportModal from "@/components/CURD/ImportModal.vue";
+import ExportModal from "@/components/CURD/ExportModal.vue";
+import SysDocumentChunksAPI, { SysDocumentChunksPageQuery, SysDocumentChunksTable, SysDocumentChunksForm } from '@/api/module_gencode/sys_document_chunks'
 
 const visible = ref(true);
+const isExpand = ref(false);
+const isExpandable = ref(true);
 const queryFormRef = ref();
 const dataFormRef = ref();
 const total = ref(0);
 const selectIds = ref<number[]>([]);
-const selectionRows = ref<DemoTable[]>([]);
+const selectionRows = ref<SysDocumentChunksTable[]>([]);
 const loading = ref(false);
-const isExpand = ref(false);
-const isExpandable = ref(true);
+
+// 字典仓库与需要加载的字典类型
+const dictStore = useDictStore()
+const dictTypes: any = [
+]
 
 // 分页表单
-const pageTableData = ref<DemoTable[]>([]);
+const pageTableData = ref<SysDocumentChunksTable[]>([]);
 
 // 表格列配置
 const tableColumns = ref([
   { prop: "selection", label: "选择框", show: true },
   { prop: "index", label: "序号", show: true },
-  { prop: "name", label: "名称", show: true },
-  { prop: "status", label: "状态", show: true },
-  { prop: "description", label: "描述", show: true },
-  { prop: "created_time", label: "创建时间", show: true },
-  { prop: "updated_time", label: "更新时间", show: true },
-  { prop: "created_id", label: "创建人", show: true },
-  { prop: "updated_id", label: "更新人", show: true },
-  { prop: "operation", label: "操作", show: true },
+  { prop: 'doc_id', label: '关联文档主表ID', show: true },
+  { prop: 'vector_id', label: '关联向量数据库中的唯一ID', show: true },
+  { prop: 'content', label: '切片原文内容', show: true },
+  { prop: 'page_number', label: '所在文档原始页码', show: true },
+  { prop: 'chunk_order', label: '在原文档中的切片顺序', show: true },
+  { prop: 'token_count', label: '该切片的Token预估数量', show: true },
+  { prop: 'status', label: '状态(0:启用 1:禁用)', show: true },
+  { prop: 'description', label: '备注/描述', show: true },
+  { prop: 'created_time', label: '创建时间', show: true },
+  { prop: 'updated_time', label: '更新时间', show: true },
+  { prop: 'created_id', label: '创建人ID', show: true },
+  { prop: 'updated_id', label: '更新人ID', show: true },
+  { prop: 'operation', label: '操作', show: true }
 ]);
 
-// 仅用于导出字段的列（排除非数据列及嵌套对象列）
+// 导出列（不含选择/序号/操作）
 const exportColumns = [
-  { prop: "name", label: "名称" },
-  { prop: "status", label: "状态" },
-  { prop: "description", label: "描述" },
-  { prop: "created_time", label: "创建时间" },
-  { prop: "updated_time", label: "更新时间" },
-];
+  { prop: 'doc_id', label: '关联文档主表ID' },
+  { prop: 'vector_id', label: '关联向量数据库中的唯一ID' },
+  { prop: 'content', label: '切片原文内容' },
+  { prop: 'page_number', label: '所在文档原始页码' },
+  { prop: 'chunk_order', label: '在原文档中的切片顺序' },
+  { prop: 'token_count', label: '该切片的Token预估数量' },
+  { prop: 'status', label: '状态(0:启用 1:禁用)' },
+  { prop: 'description', label: '备注/描述' },
+  { prop: 'created_time', label: '创建时间' },
+  { prop: 'updated_time', label: '更新时间' },
+  { prop: 'created_id', label: '创建人ID' },
+  { prop: 'updated_id', label: '更新人ID' },
+]
 
 // 导入/导出配置
 const curdContentConfig = {
-  permPrefix: "module_gencode:demo",
+  permPrefix: "module_gencode:sys_document_chunks",
   cols: exportColumns as any,
-  importTemplate: () => DemoAPI.downloadTemplateDemo(),
+  importTemplate: () => SysDocumentChunksAPI.downloadTemplateSysDocumentChunks(),
   exportsAction: async (params: any) => {
     const query: any = { ...params };
-    if (typeof query.status === "string") {
-      query.status = query.status === "true";
-    }
+    query.status = '0';
     query.page_no = 1;
     query.page_size = 9999;
     const all: any[] = [];
     while (true) {
-      const res = await DemoAPI.getDemoList(query);
+      const res = await SysDocumentChunksAPI.listSysDocumentChunks(query);
       const items = res.data?.data?.items || [];
       const total = res.data?.data?.total || 0;
       all.push(...items);
@@ -519,8 +551,9 @@ const curdContentConfig = {
     return all;
   },
 } as unknown as IContentConfig;
+
 // 详情表单
-const detailFormData = ref<DemoTable>({});
+const detailFormData = ref<SysDocumentChunksTable>({});
 // 日期范围临时变量
 const createdDateRange = ref<[Date, Date] | []>([]);
 // 更新时间范围临时变量
@@ -547,10 +580,15 @@ function handleUpdatedDateRangeChange(range: [Date, Date]) {
 }
 
 // 分页查询参数
-const queryFormData = reactive<DemoPageQuery>({
+const queryFormData = reactive<SysDocumentChunksPageQuery>({
   page_no: 1,
   page_size: 10,
-  name: undefined,
+  doc_id: undefined,
+  vector_id: undefined,
+  content: undefined,
+  page_number: undefined,
+  chunk_order: undefined,
+  token_count: undefined,
   status: undefined,
   created_time: undefined,
   updated_time: undefined,
@@ -558,11 +596,17 @@ const queryFormData = reactive<DemoPageQuery>({
   updated_id: undefined,
 });
 
+
 // 编辑表单
-const formData = reactive<DemoForm>({
+const formData = reactive<SysDocumentChunksForm>({
   id: undefined,
-  name: "",
-  status: "0",
+  doc_id: undefined,
+  vector_id: undefined,
+  content: undefined,
+  page_number: undefined,
+  chunk_order: undefined,
+  token_count: undefined,
+  status: undefined,
   description: undefined,
 });
 
@@ -575,8 +619,48 @@ const dialogVisible = reactive({
 
 // 表单验证规则
 const rules = reactive({
-  name: [{ required: true, message: "请输入名称", trigger: "blur" }],
-  status: [{ required: true, message: "请选择状态", trigger: "blur" }],
+  id: [
+    { required: false, message: '请输入主键ID', trigger: 'blur' },
+  ],
+  uuid: [
+    { required: true, message: '请输入UUID全局唯一标识', trigger: 'blur' },
+  ],
+  doc_id: [
+    { required: true, message: '请输入关联文档主表ID', trigger: 'blur' },
+  ],
+  vector_id: [
+    { required: false, message: '请输入关联向量数据库中的唯一ID', trigger: 'blur' },
+  ],
+  content: [
+    { required: true, message: '请输入切片原文内容', trigger: 'blur' },
+  ],
+  page_number: [
+    { required: false, message: '请输入所在文档原始页码', trigger: 'blur' },
+  ],
+  chunk_order: [
+    { required: false, message: '请输入在原文档中的切片顺序', trigger: 'blur' },
+  ],
+  token_count: [
+    { required: false, message: '请输入该切片的Token预估数量', trigger: 'blur' },
+  ],
+  status: [
+    { required: true, message: '请输入状态(0:启用 1:禁用)', trigger: 'blur' },
+  ],
+  description: [
+    { required: false, message: '请输入备注/描述', trigger: 'blur' },
+  ],
+  created_time: [
+    { required: true, message: '请输入创建时间', trigger: 'blur' },
+  ],
+  updated_time: [
+    { required: true, message: '请输入更新时间', trigger: 'blur' },
+  ],
+  created_id: [
+    { required: false, message: '请输入创建人ID', trigger: 'blur' },
+  ],
+  updated_id: [
+    { required: false, message: '请输入更新人ID', trigger: 'blur' },
+  ],
 });
 
 // 导入弹窗显示状态
@@ -604,7 +688,7 @@ async function handleRefresh() {
 async function loadingData() {
   loading.value = true;
   try {
-    const response = await DemoAPI.getDemoList(queryFormData);
+    const response = await SysDocumentChunksAPI.listSysDocumentChunks(queryFormData);
     pageTableData.value = response.data.data.items;
     total.value = response.data.data.total;
   } catch (error: any) {
@@ -638,11 +722,16 @@ async function handleResetQuery() {
 }
 
 // 定义初始表单数据常量
-const initialFormData: DemoForm = {
+const initialFormData: SysDocumentChunksForm = {
   id: undefined,
-  name: "",
-  status: "0",
-  description: "",
+  doc_id: undefined,
+  vector_id: undefined,
+  content: undefined,
+  page_number: undefined,
+  chunk_order: undefined,
+  token_count: undefined,
+  status: undefined,
+  description: undefined,
 };
 
 // 重置表单
@@ -671,7 +760,7 @@ async function handleCloseDialog() {
 async function handleOpenDialog(type: "create" | "update" | "detail", id?: number) {
   dialogVisible.type = type;
   if (id) {
-    const response = await DemoAPI.getDemoDetail(id);
+    const response = await SysDocumentChunksAPI.detailSysDocumentChunks(id);
     if (type === "detail") {
       dialogVisible.title = "详情";
       Object.assign(detailFormData.value, response.data.data);
@@ -680,8 +769,16 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
       Object.assign(formData, response.data.data);
     }
   } else {
-    dialogVisible.title = "新增示例";
+    dialogVisible.title = "新增SysDocumentChunks";
     formData.id = undefined;
+    formData.doc_id = undefined;
+    formData.vector_id = undefined;
+    formData.content = undefined;
+    formData.page_number = undefined;
+    formData.chunk_order = undefined;
+    formData.token_count = undefined;
+    formData.status = undefined;
+    formData.description = undefined;
   }
   dialogVisible.visible = true;
 }
@@ -696,7 +793,7 @@ async function handleSubmit() {
       const id = formData.id;
       if (id) {
         try {
-          await DemoAPI.updateDemo(id, { id, ...formData });
+          await SysDocumentChunksAPI.updateSysDocumentChunks(id, { id, ...formData });
           dialogVisible.visible = false;
           resetForm();
           handleCloseDialog();
@@ -708,7 +805,7 @@ async function handleSubmit() {
         }
       } else {
         try {
-          await DemoAPI.createDemo(formData);
+          await SysDocumentChunksAPI.createSysDocumentChunks(formData);
           dialogVisible.visible = false;
           resetForm();
           handleCloseDialog();
@@ -733,7 +830,7 @@ async function handleDelete(ids: number[]) {
     .then(async () => {
       try {
         loading.value = true;
-        await DemoAPI.deleteDemo(ids);
+        await SysDocumentChunksAPI.deleteSysDocumentChunks(ids);
         handleResetQuery();
       } catch (error: any) {
         console.error(error);
@@ -757,7 +854,7 @@ async function handleMoreClick(status: string) {
       .then(async () => {
         try {
           loading.value = true;
-          await DemoAPI.batchDemo({ ids: selectIds.value, status });
+          await SysDocumentChunksAPI.batchSysDocumentChunks({ ids: selectIds.value, status });
           handleResetQuery();
         } catch (error: any) {
           console.error(error);
@@ -774,7 +871,7 @@ async function handleMoreClick(status: string) {
 // 处理上传
 const handleUpload = async (formData: FormData) => {
   try {
-    const response = await DemoAPI.importDemo(formData);
+    const response = await SysDocumentChunksAPI.importSysDocumentChunks(formData);
     if (response.data.code === ResultEnum.SUCCESS) {
       ElMessage.success(`${response.data.msg}，${response.data.data}`);
       importDialogVisible.value = false;
@@ -785,9 +882,14 @@ const handleUpload = async (formData: FormData) => {
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
+  // 预加载字典数据
+  if (dictTypes.length > 0) {
+    await dictStore.getDict(dictTypes)
+  }
   loadingData();
 });
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+</style>
