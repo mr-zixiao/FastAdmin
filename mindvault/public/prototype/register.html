@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户注册 - Dify 知识库管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .register-container {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .register-card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo {
+            font-size: 36px;
+            margin-bottom: 12px;
+            color: #3b82f6;
+        }
+
+        .logo-section h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .logo-section p {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-label .required {
+            color: #ef4444;
+            margin-left: 4px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-input.error {
+            border-color: #ef4444;
+        }
+
+        .form-input.success {
+            border-color: #10b981;
+        }
+
+        .password-strength {
+            margin-top: 8px;
+        }
+
+        .strength-meter {
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .strength-bar {
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .strength-weak {
+            background: #ef4444;
+        }
+
+        .strength-medium {
+            background: #f59e0b;
+        }
+
+        .strength-strong {
+            background: #10b981;
+        }
+
+        .strength-text {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .error-message {
+            font-size: 12px;
+            color: #ef4444;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .success-message {
+            font-size: 12px;
+            color: #10b981;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .terms-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .terms-checkbox input[type="checkbox"] {
+            margin-top: 4px;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .terms-text {
+            font-size: 13px;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .terms-text a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .terms-text a:hover {
+            text-decoration: underline;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-primary:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .login-link a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+
+        .tech-section {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            margin-top: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .tech-section h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #111827;
+        }
+
+        .tech-item {
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .tech-item:last-child {
+            border-bottom: none;
+        }
+
+        .tech-item h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #374151;
+        }
+
+        .tech-item p {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        .tech-item ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
+        .tech-item li {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 6px;
+        }
+
+        .code-block {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 16px;
+            margin-top: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #374151;
+            overflow-x: auto;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-card">
+            <div class="logo-section">
+                <div class="logo">🚀</div>
+                <h1>创建新账号</h1>
+                <p>加入 Dify 知识库管理系统</p>
+            </div>
+
+            <div class="alert alert-error" id="errorAlert" style="display: none;">
+                注册失败，请检查输入信息。
+            </div>
+
+            <div class="alert alert-success" id="successAlert" style="display: none;">
+                注册成功！正在跳转到验证页面...
+            </div>
+
+            <form id="registerForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="username">
+                            用户名 <span class="required">*</span>
+                        </label>
+                        <input type="text" id="username" class="form-input" placeholder="请输入用户名" required>
+                        <div class="error-message" id="usernameError">用户名必须为3-20位字母、数字或下划线</div>
+                        <div class="success-message" id="usernameSuccess">用户名可用</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="email">
+                            邮箱 <span class="required">*</span>
+                        </label>
+                        <input type="email" id="email" class="form-input" placeholder="请输入邮箱地址" required>
+                        <div class="error-message" id="emailError">请输入有效的邮箱地址</div>
+                        <div class="success-message" id="emailSuccess">邮箱格式正确</div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="password">
+                            密码 <span class="required">*</span>
+                        </label>
+                        <input type="password" id="password" class="form-input" placeholder="请输入密码" required>
+                        <div class="password-strength">
+                            <div class="strength-text" id="strengthText">密码强度：弱</div>
+                            <div class="strength-meter">
+                                <div class="strength-bar strength-weak" id="strengthBar"></div>
+                            </div>
+                        </div>
+                        <div class="error-message" id="passwordError">密码必须包含字母、数字和特殊字符，长度8-32位</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="confirmPassword">
+                            确认密码 <span class="required">*</span>
+                        </label>
+                        <input type="password" id="confirmPassword" class="form-input" placeholder="请再次输入密码" required>
+                        <div class="error-message" id="confirmPasswordError">两次输入的密码不一致</div>
+                        <div class="success-message" id="confirmPasswordSuccess">密码一致</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="fullName">
+                        姓名
+                    </label>
+                    <input type="text" id="fullName" class="form-input" placeholder="请输入您的姓名（可选）">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="company">
+                        公司/组织
+                    </label>
+                    <input type="text" id="company" class="form-input" placeholder="请输入公司或组织名称（可选）">
+                </div>
+
+                <div class="terms-checkbox">
+                    <input type="checkbox" id="agreeTerms" required>
+                    <label for="agreeTerms" class="terms-text">
+                        我已阅读并同意 <a href="terms.html">服务条款</a> 和 <a href="privacy.html">隐私政策</a>
+                    </label>
+                </div>
+                <div class="error-message" id="termsError">请同意服务条款和隐私政策</div>
+
+                <button type="submit" class="btn btn-primary" id="registerBtn">
+                    注册账号
+                </button>
+            </form>
+
+            <div class="login-link">
+                已有账号？ <a href="login.html">立即登录</a>
+            </div>
+        </div>
+
+        <div class="tech-section">
+            <h2>📋 功能说明与技术实现</h2>
+
+            <div class="tech-item">
+                <h3>1. 用户注册流程</h3>
+                <p><strong>功能描述：</strong>收集用户信息并创建账号，支持邮箱验证。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>实时表单验证：用户名唯一性检查、邮箱格式验证、密码强度评估</li>
+                    <li>密码强度指示器：实时显示密码强度等级</li>
+                    <li>异步验证：用户名/邮箱唯一性检查（防重复注册）</li>
+                    <li>防重复提交：提交后禁用按钮，防止多次提交</li>
+                    <li>进度指示：显示注册过程的各个阶段</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>POST /api/v1/auth/register - 用户注册接口</li>
+                    <li>数据验证：字段格式、唯一性、业务规则验证</li>
+                    <li>密码加密：使用 bcrypt 或 Argon2 哈希密码</li>
+                    <li>邮箱验证：发送验证邮件，生成验证令牌</li>
+                    <li>用户默认设置：初始化用户配置、权限、空间配额</li>
+                </ul>
+                <div class="code-block">
+// 前端注册请求示例
+async function register(userData) {
+    const response = await fetch('/api/v1/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData)
+    });
+
+    if (response.ok) {
+        const data = await response.json();
+        if (data.requires_verification) {
+            // 需要邮箱验证
+            window.location.href = `/verify-email.html?email=${encodeURIComponent(userData.email)}`;
+        } else {
+            // 直接登录
+            localStorage.setItem('access_token', data.access_token);
+            window.location.href = 'index.html';
+        }
+    } else {
+        const error = await response.json();
+        showError(error.message);
+    }
+}
+
+// 用户名唯一性检查
+async function checkUsername(username) {
+    const response = await fetch(`/api/v1/auth/check-username?username=${encodeURIComponent(username)}`);
+    return await response.json();
+}
+                </div>
+            </div>
+
+            <div class="tech-item">
+                <h3>2. 密码安全策略</h3>
+                <p><strong>功能描述：</strong>确保用户密码的安全性。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>密码强度评估：基于长度、字符类型、复杂度计算</li>
+                    <li>密码可见性切换：显示/隐藏密码功能</li>
+                    <li>密码规则提示：实时显示密码要求</li>
+                    <li>密码历史检查（可选）：避免使用近期用过的密码</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>密码策略配置：可配置的复杂度要求</li>
+                    <li>密码哈希：使用安全的哈希算法和盐值</li>
+                    <li>密码过期策略：定期要求更换密码</li>
+                    <li>密码历史记录：存储历史密码哈希，防止重用</li>
+                </ul>
+                <div class="code-block">
+# 密码强度评估算法
+def evaluate_password_strength(password):
+    score = 0
+
+    # 长度得分
+    if len(password) >= 8:
+        score += 1
+    if len(password) >= 12:
+        score += 1
+
+    # 字符类型得分
+    if re.search(r'[a-z]', password):
+        score += 1
+    if re.search(r'[A-Z]', password):
+        score += 1
+    if re.search(r'\d', password):
+        score += 1
+    if re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+        score += 1
+
+    # 判断强度等级
+    if score <= 2:
+        return 'weak'
+    elif score <= 4:
+        return 'medium'
+    else:
+        return 'strong'
+
+# 后端密码哈希
+def hash_password(password):
+    salt = bcrypt.gensalt(rounds=12)
+    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed.decode('utf-8')
+                </div>
+            </div>
+
+            <div class="tech-item">
+                <h3>3. 邮箱验证系统</h3>
+                <p><strong>功能描述：</strong>验证用户邮箱地址的真实性，防止垃圾账号。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>验证邮件发送状态显示</li>
+                    <li>验证页面：输入验证码或点击验证链接</li>
+                    <li>重新发送验证邮件功能</li>
+                    <li>验证倒计时：限制频繁发送验证邮件</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>验证令牌生成：JWT 或随机令牌</li>
+                    <li>邮件发送服务：使用 SMTP 或第三方邮件服务</li>
+                    <li>验证状态管理：记录验证状态和时间</li>
+                    <li>令牌过期处理：设置有效期限</li>
+                    <li>防滥用机制：限制同一邮箱的验证请求频率</li>
+                </ul>
+                <div class="code-block">
+# 邮箱验证令牌生成
+def generate_verification_token(user_id, email):
+    payload = {
+        'user_id': user_id,
+        'email': email,
+        'exp': datetime.utcnow() + timedelta(hours=24)
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm='HS256')
+    return token
+
+# 发送验证邮件
+def send_verification_email(user_email, token):
+    verification_url = f'{BASE_URL}/verify-email?token={token}'
+
+    html_content = f'''
+    <h2>欢迎注册 Dify 知识库管理系统</h2>
+    <p>请点击以下链接验证您的邮箱地址：</p>
+    <p><a href="{verification_url}">验证邮箱</a></p>
+    <p>如果链接无效，请复制以下地址到浏览器：</p>
+    <p>{verification_url}</p>
+    <p>该链接24小时内有效。</p>
+    '''
+
+    send_email(
+        to=user_email,
+        subject='请验证您的邮箱地址 - Dify',
+        html=html_content
+    )
+                </div>
+            </div>
+
+            <div class="tech-item">
+                <h3>4. 用户资料初始化</h3>
+                <p><strong>功能描述：</strong>为新用户创建默认配置和资源。</p>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>默认角色分配：根据注册类型分配权限</li>
+                    <li>资源配额设置：知识库数量、文档大小限制</li>
+                    <li>个人空间创建：用户的默认工作空间</li>
+                    <li>欢迎内容：创建示例知识库和文档</li>
+                    <li>使用引导：记录新用户引导状态</li>
+                </ul>
+                <div class="code-block">
+# 用户初始化流程
+def initialize_user(user_id):
+    # 1. 创建默认角色
+    assign_default_role(user_id)
+
+    # 2. 设置资源配额
+    set_resource_quota(user_id, {
+        'max_knowledge_bases': 10,
+        'max_document_size': 100 * 1024 * 1024,  # 100MB
+        'max_documents': 1000
+    })
+
+    # 3. 创建个人空间
+    personal_space = create_personal_space(user_id)
+
+    # 4. 创建示例知识库（可选）
+    if user_is_newbie(user_id):
+        create_example_knowledge_base(user_id, personal_space.id)
+
+    # 5. 发送欢迎邮件
+    send_welcome_email(user_id)
+
+    return personal_space
+                </div>
+            </div>
+
+            <div class="tech-item">
+                <h3>5. 防滥用和安全机制</h3>
+                <p><strong>功能描述：</strong>防止恶意注册和滥用。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>人机验证：集成 reCAPTCHA 或 hCaptcha</li>
+                    <li>注册频率限制：同一IP的注册次数限制</li>
+                    <li>可疑行为检测：异常注册模式识别</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>IP限制：基于IP地址的注册频率控制</li>
+                    <li>邮箱域名过滤：禁止临时邮箱或垃圾邮箱域名</li>
+                    <li>行为分析：检测批量注册行为</li>
+                    <li>审核机制：高风险注册需要人工审核</li>
+                </ul>
+                <div class="code-block">
+# 注册防滥用检查
+def check_registration_abuse(ip_address, email):
+    # 检查IP注册频率
+    recent_registrations = get_recent_registrations_by_ip(ip_address, hours=24)
+    if len(recent_registrations) >= 10:
+        raise AbuseError('注册过于频繁，请稍后再试')
+
+    # 检查邮箱域名
+    email_domain = email.split('@')[-1]
+    if email_domain in BLACKLISTED_DOMAINS:
+        raise AbuseError('该邮箱域名不被允许')
+
+    # 验证reCAPTCHA
+    recaptcha_response = request.json.get('recaptcha_token')
+    if not verify_recaptcha(recaptcha_response):
+        raise AbuseError('人机验证失败')
+
+    return True
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM 元素
+        const registerForm = document.getElementById('registerForm');
+        const usernameInput = document.getElementById('username');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirmPassword');
+        const agreeTermsCheckbox = document.getElementById('agreeTerms');
+        const registerBtn = document.getElementById('registerBtn');
+
+        const strengthBar = document.getElementById('strengthBar');
+        const strengthText = document.getElementById('strengthText');
+
+        // 实时验证
+        usernameInput.addEventListener('input', debounce(validateUsername, 500));
+        emailInput.addEventListener('input', debounce(validateEmail, 500));
+        passwordInput.addEventListener('input', validatePassword);
+        confirmPasswordInput.addEventListener('input', validateConfirmPassword);
+
+        // 表单提交处理
+        registerForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // 验证所有字段
+            const isUsernameValid = validateUsername();
+            const isEmailValid = validateEmail();
+            const isPasswordValid = validatePassword();
+            const isConfirmPasswordValid = validateConfirmPassword();
+            const isTermsAgreed = validateTerms();
+
+            if (isUsernameValid && isEmailValid && isPasswordValid &&
+                isConfirmPasswordValid && isTermsAgreed) {
+
+                // 显示加载状态
+                registerBtn.disabled = true;
+                registerBtn.innerHTML = '注册中...';
+
+                // 模拟注册请求（实际应调用API）
+                setTimeout(() => {
+                    // 模拟注册成功
+                    document.getElementById('successAlert').style.display = 'block';
+                    document.getElementById('errorAlert').style.display = 'none';
+
+                    // 模拟跳转
+                    setTimeout(() => {
+                        window.location.href = 'login.html?registered=true';
+                    }, 2000);
+                }, 2000);
+            } else {
+                document.getElementById('errorAlert').style.display = 'block';
+                document.getElementById('errorAlert').textContent = '请检查表单中的错误信息';
+            }
+        });
+
+        // 验证用户名
+        function validateUsername() {
+            const username = usernameInput.value.trim();
+            const errorElement = document.getElementById('usernameError');
+            const successElement = document.getElementById('usernameSuccess');
+
+            // 重置状态
+            resetValidation(usernameInput, errorElement, successElement);
+
+            if (!username) {
+                showError(usernameInput, errorElement, '用户名不能为空');
+                return false;
+            }
+
+            // 用户名规则：3-20位字母、数字、下划线
+            const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+            if (!usernameRegex.test(username)) {
+                showError(usernameInput, errorElement, '用户名必须为3-20位字母、数字或下划线');
+                return false;
+            }
+
+            // 模拟异步检查用户名是否可用
+            // 实际项目中这里应该调用API检查用户名唯一性
+            if (username.length >= 3) {
+                showSuccess(usernameInput, successElement, '用户名可用');
+                return true;
+            }
+
+            return false;
+        }
+
+        // 验证邮箱
+        function validateEmail() {
+            const email = emailInput.value.trim();
+            const errorElement = document.getElementById('emailError');
+            const successElement = document.getElementById('emailSuccess');
+
+            resetValidation(emailInput, errorElement, successElement);
+
+            if (!email) {
+                showError(emailInput, errorElement, '邮箱不能为空');
+                return false;
+            }
+
+            // 邮箱格式验证
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showError(emailInput, errorElement, '请输入有效的邮箱地址');
+                return false;
+            }
+
+            // 模拟邮箱唯一性检查
+            if (email.includes('@')) {
+                showSuccess(emailInput, successElement, '邮箱格式正确');
+                return true;
+            }
+
+            return false;
+        }
+
+        // 验证密码强度
+        function validatePassword() {
+            const password = passwordInput.value;
+            const errorElement = document.getElementById('passwordError');
+
+            resetValidation(passwordInput, errorElement);
+
+            if (!password) {
+                showError(passwordInput, errorElement, '密码不能为空');
+                updatePasswordStrength(0);
+                return false;
+            }
+
+            // 密码规则：至少8位，包含字母和数字
+            if (password.length < 8) {
+                showError(passwordInput, errorElement, '密码长度至少8位');
+                updatePasswordStrength(1);
+                return false;
+            }
+
+            // 密码强度评估
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (/[a-z]/.test(password)) strength++;
+            if (/[A-Z]/.test(password)) strength++;
+            if (/\d/.test(password)) strength++;
+            if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength++;
+
+            updatePasswordStrength(strength);
+
+            if (strength < 3) {
+                showError(passwordInput, errorElement, '密码强度较弱，建议包含大写字母、数字和特殊字符');
+                return false;
+            }
+
+            // 清除错误，验证通过
+            passwordInput.classList.remove('error');
+            errorElement.style.display = 'none';
+            return true;
+        }
+
+        // 更新密码强度指示器
+        function updatePasswordStrength(strength) {
+            let width = 0;
+            let text = '密码强度：';
+            let colorClass = 'strength-weak';
+
+            if (strength <= 1) {
+                width = 33;
+                text += '弱';
+                colorClass = 'strength-weak';
+            } else if (strength <= 3) {
+                width = 66;
+                text += '中';
+                colorClass = 'strength-medium';
+            } else {
+                width = 100;
+                text += '强';
+                colorClass = 'strength-strong';
+            }
+
+            strengthBar.style.width = `${width}%`;
+            strengthBar.className = `strength-bar ${colorClass}`;
+            strengthText.textContent = text;
+        }
+
+        // 验证确认密码
+        function validateConfirmPassword() {
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            const errorElement = document.getElementById('confirmPasswordError');
+            const successElement = document.getElementById('confirmPasswordSuccess');
+
+            resetValidation(confirmPasswordInput, errorElement, successElement);
+
+            if (!confirmPassword) {
+                showError(confirmPasswordInput, errorElement, '请再次输入密码');
+                return false;
+            }
+
+            if (password !== confirmPassword) {
+                showError(confirmPasswordInput, errorElement, '两次输入的密码不一致');
+                return false;
+            }
+
+            showSuccess(confirmPasswordInput, successElement, '密码一致');
+            return true;
+        }
+
+        // 验证服务条款
+        function validateTerms() {
+            const errorElement = document.getElementById('termsError');
+
+            if (!agreeTermsCheckbox.checked) {
+                errorElement.style.display = 'block';
+                return false;
+            }
+
+            errorElement.style.display = 'none';
+            return true;
+        }
+
+        // 显示错误
+        function showError(inputElement, errorElement, message) {
+            inputElement.classList.add('error');
+            inputElement.classList.remove('success');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        // 显示成功
+        function showSuccess(inputElement, successElement, message) {
+            inputElement.classList.remove('error');
+            inputElement.classList.add('success');
+            successElement.textContent = message;
+            successElement.style.display = 'block';
+        }
+
+        // 重置验证状态
+        function resetValidation(inputElement, errorElement, successElement = null) {
+            inputElement.classList.remove('error', 'success');
+            if (errorElement) errorElement.style.display = 'none';
+            if (successElement) successElement.style.display = 'none';
+        }
+
+        // 防抖函数
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // 初始化
+        window.addEventListener('load', function() {
+            // 如果有注册成功的参数，显示成功提示
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('registered') === 'true') {
+                document.getElementById('successAlert').style.display = 'block';
+                document.getElementById('successAlert').textContent = '注册成功！请登录您的账号。';
+            }
+        });
+    </script>
+</body>
+</html>

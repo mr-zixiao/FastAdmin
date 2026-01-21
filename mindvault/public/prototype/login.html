@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户登录 - Dify 知识库管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo {
+            font-size: 36px;
+            margin-bottom: 12px;
+            color: #3b82f6;
+        }
+
+        .logo-section h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+
+        .logo-section p {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-input.error {
+            border-color: #ef4444;
+        }
+
+        .error-message {
+            font-size: 12px;
+            color: #ef4444;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .remember-me label {
+            font-size: 13px;
+            color: #6b7280;
+            cursor: pointer;
+        }
+
+        .forgot-password {
+            font-size: 13px;
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-primary:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 24px 0;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        .divider span {
+            padding: 0 12px;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .register-link a {
+            color: #3b82f6;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .tech-section {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            margin-top: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .tech-section h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #111827;
+        }
+
+        .tech-item {
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .tech-item:last-child {
+            border-bottom: none;
+        }
+
+        .tech-item h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #374151;
+        }
+
+        .tech-item p {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        .tech-item ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
+        .tech-item li {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 6px;
+        }
+
+        .code-block {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 16px;
+            margin-top: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #374151;
+            overflow-x: auto;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo-section">
+                <div class="logo">🔐</div>
+                <h1>欢迎回来</h1>
+                <p>登录 Dify 知识库管理系统</p>
+            </div>
+
+            <div class="alert alert-error" id="errorAlert">
+                用户名或密码错误，请重试。
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label" for="username">用户名或邮箱</label>
+                    <input type="text" id="username" class="form-input" placeholder="请输入用户名或邮箱地址" required>
+                    <div class="error-message" id="usernameError">请输入有效的用户名或邮箱</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">密码</label>
+                    <input type="password" id="password" class="form-input" placeholder="请输入密码" required>
+                    <div class="error-message" id="passwordError">密码不能为空</div>
+                </div>
+
+                <div class="form-options">
+                    <div class="remember-me">
+                        <input type="checkbox" id="rememberMe">
+                        <label for="rememberMe">记住我</label>
+                    </div>
+                    <a href="forgot-password.html" class="forgot-password">忘记密码？</a>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="loginBtn">
+                    登录
+                </button>
+            </form>
+
+            <div class="divider">
+                <span>或</span>
+            </div>
+
+            <button class="btn btn-secondary" onclick="location.href='register.html'">
+                创建新账号
+            </button>
+
+            <div class="register-link">
+                还没有账号？ <a href="register.html">立即注册</a>
+            </div>
+        </div>
+
+        <div class="tech-section">
+            <h2>📋 功能说明与技术实现</h2>
+
+            <div class="tech-item">
+                <h3>1. 用户身份验证</h3>
+                <p><strong>功能描述：</strong>验证用户身份，提供安全的登录访问。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>表单验证：用户名/邮箱格式验证、密码强度检查</li>
+                    <li>防暴力破解：登录失败次数限制、验证码机制</li>
+                    <li>记住我功能：使用 localStorage 存储登录状态</li>
+                    <li>加载状态显示：登录过程中的按钮禁用和加载动画</li>
+                    <li>密码可见性切换（可选）：显示/隐藏密码功能</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>POST /api/v1/auth/login - 登录接口</li>
+                    <li>密码哈希存储：使用 bcrypt 或 Argon2 加密</li>
+                    <li>JWT Token 生成：返回访问令牌和刷新令牌</li>
+                    <li>登录审计：记录登录时间、IP地址、设备信息</li>
+                    <li>账号锁定：连续失败登录锁定机制</li>
+                </ul>
+                <div class="code-block">
+// 前端登录请求示例
+async function login(username, password) {
+    const response = await fetch('/api/v1/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            username: username,
+            password: password,
+            remember_me: rememberMeChecked
+        })
+    });
+
+    if (response.ok) {
+        const data = await response.json();
+        // 存储 Token
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('refresh_token', data.refresh_token);
+        // 跳转到主页
+        window.location.href = 'index.html';
+    } else {
+        // 显示错误信息
+        showError('登录失败，请检查用户名和密码');
+    }
+}
+                </div>
+            </div>
+
+            <div class="tech-item">
+                <h3>2. 安全机制</h3>
+                <p><strong>功能描述：</strong>保障登录过程的安全性。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>CSRF 令牌保护：在表单中包含 CSRF Token</li>
+                    <li>XSS 防护：输入内容转义和过滤</li>
+                    <li>HTTPS 强制：生产环境强制使用 HTTPS</li>
+                    <li>密码传输加密：前端加密敏感数据</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>JWT Token 验证：Bearer Token 验证中间件</li>
+                    <li>Token 刷新机制：使用 Refresh Token 获取新 Access Token</li>
+                    <li>会话管理：支持多设备登录、会话管理</li>
+                    <li>密码策略：密码复杂度要求、定期更换提醒</li>
+                    <li>多因素认证：支持邮箱/手机验证码、TOTP</li>
+                </ul>
+                <div class="code-block">
+# 后端登录验证示例
+@app.route('/api/v1/auth/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+
+    # 检查登录失败次数
+    if is_account_locked(username):
+        return jsonify({'error': '账号已锁定，请稍后再试'}), 429
+
+    # 验证用户
+    user = User.query.filter_by(username=username).first()
+    if not user or not user.verify_password(password):
+        record_failed_login(username, request.remote_addr)
+        return jsonify({'error': '用户名或密码错误'}), 401
+
+    # 生成 JWT Token
+    access_token = create_access_token(identity=user.id)
+    refresh_token = create_refresh_token(identity=user.id)
+
+    # 记录登录成功
+    record_successful_login(user.id, request.remote_addr)
+
+    return jsonify({
+        'access_token': access_token,
+        'refresh_token': refresh_token,
+        'user': user.to_dict()
+    })
+                </div>
+            </div>
+
+            <div class="tech-item">
+                <h3>3. 用户体验优化</h3>
+                <p><strong>功能描述：</strong>提升用户登录体验。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>自动填充：浏览器自动填充用户名密码</li>
+                    <li>回车提交：支持 Enter 键提交表单</li>
+                    <li>错误提示：明确的错误信息和解决方案</li>
+                    <li>响应式设计：适配移动端和桌面端</li>
+                    <li>无障碍访问：支持屏幕阅读器和键盘导航</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>快速响应：登录接口响应时间优化</li>
+                    <li>缓存优化：用户信息缓存提升性能</li>
+                    <li>负载均衡：支持多实例部署</li>
+                </ul>
+            </div>
+
+            <div class="tech-item">
+                <h3>4. 第三方登录集成</h3>
+                <p><strong>功能描述：</strong>支持第三方平台登录。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>OAuth 2.0 授权流程：跳转到第三方平台授权</li>
+                    <li>社交登录按钮：GitHub、Google、微信等</li>
+                    <li>授权回调处理：接收授权码并交换 Token</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>OAuth 2.0 服务端实现：支持多种认证提供商</li>
+                    <li>用户信息同步：将第三方用户信息同步到本地</li>
+                    <li>账号绑定：支持绑定多个第三方账号</li>
+                </ul>
+                <div class="code-block">
+// 第三方登录流程示例
+function startOAuthLogin(provider) {
+    // 跳转到授权页面
+    const state = generateRandomState();
+    localStorage.setItem('oauth_state', state);
+
+    const authUrl = `/api/v1/auth/oauth/${provider}/authorize?state=${state}`;
+    window.location.href = authUrl;
+}
+
+// 处理回调
+async function handleOAuthCallback(code, state) {
+    const savedState = localStorage.getItem('oauth_state');
+    if (state !== savedState) {
+        throw new Error('Invalid state parameter');
+    }
+
+    const response = await fetch(`/api/v1/auth/oauth/${provider}/callback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: code })
+    });
+
+    // 处理登录结果
+    // ...
+}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 表单验证
+        const loginForm = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const usernameError = document.getElementById('usernameError');
+        const passwordError = document.getElementById('passwordError');
+        const errorAlert = document.getElementById('errorAlert');
+        const loginBtn = document.getElementById('loginBtn');
+
+        // 表单提交处理
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            // 重置错误状态
+            resetErrors();
+
+            // 验证输入
+            let isValid = true;
+
+            if (!usernameInput.value.trim()) {
+                showError(usernameInput, usernameError, '请输入用户名或邮箱');
+                isValid = false;
+            }
+
+            if (!passwordInput.value.trim()) {
+                showError(passwordInput, passwordError, '请输入密码');
+                isValid = false;
+            }
+
+            if (!isValid) return;
+
+            // 显示加载状态
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '登录中...';
+
+            // 模拟登录请求（实际应调用API）
+            setTimeout(() => {
+                // 模拟登录成功
+                const username = usernameInput.value;
+                const password = passwordInput.value;
+
+                // 简单验证逻辑（实际项目中应调用后端API）
+                if (username && password) {
+                    // 登录成功，跳转到首页
+                    alert('登录成功！跳转到知识库列表...');
+                    window.location.href = 'index.html';
+                } else {
+                    // 登录失败
+                    showAlert('用户名或密码错误，请重试。');
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = '登录';
+                }
+            }, 1500);
+        });
+
+        // 显示输入错误
+        function showError(inputElement, errorElement, message) {
+            inputElement.classList.add('error');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        // 重置错误状态
+        function resetErrors() {
+            usernameInput.classList.remove('error');
+            passwordInput.classList.remove('error');
+            usernameError.style.display = 'none';
+            passwordError.style.display = 'none';
+            errorAlert.style.display = 'none';
+        }
+
+        // 显示全局错误提示
+        function showAlert(message) {
+            errorAlert.textContent = message;
+            errorAlert.style.display = 'block';
+        }
+
+        // 回车键提交
+        usernameInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                passwordInput.focus();
+            }
+        });
+
+        passwordInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loginForm.dispatchEvent(new Event('submit'));
+            }
+        });
+
+        // 页面加载时检查是否有已保存的用户名
+        window.addEventListener('load', function() {
+            const savedUsername = localStorage.getItem('remembered_username');
+            if (savedUsername) {
+                usernameInput.value = savedUsername;
+                document.getElementById('rememberMe').checked = true;
+            }
+        });
+    </script>
+</body>
+</html>

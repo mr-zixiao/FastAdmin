@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据分析 - Dify 知识库管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            color: #1f2937;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .back-btn {
+            padding: 8px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 24px auto;
+            padding: 0 24px;
+        }
+
+        .date-range-selector {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .date-range-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .date-btn {
+            padding: 8px 16px;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .date-btn:hover {
+            background: #f3f4f6;
+        }
+
+        .date-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .custom-date-range {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .date-input {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .export-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .stat-title {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .stat-icon {
+            font-size: 20px;
+            color: #6b7280;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+
+        .stat-change {
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .change-up {
+            color: #10b981;
+        }
+
+        .change-down {
+            color: #ef4444;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 1300px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .chart-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+
+        .chart-placeholder {
+            background: #f9fafb;
+            border: 1px dashed #e5e7eb;
+            border-radius: 6px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .table-card {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .table-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .analytics-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .analytics-table th {
+            text-align: left;
+            padding: 12px 16px;
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .analytics-table td {
+            padding: 16px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .analytics-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .query-text {
+            font-weight: 500;
+            color: #111827;
+        }
+
+        .query-count {
+            text-align: center;
+        }
+
+        .accuracy-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .accuracy-high {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .accuracy-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .accuracy-low {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #3b82f6;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-name {
+            font-weight: 500;
+            color: #111827;
+        }
+
+        .user-role {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .knowledge-base-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: #eff6ff;
+            color: #1e40af;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .filter-bar {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+            min-width: 160px;
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .insight-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .insight-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .insight-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: #eff6ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #3b82f6;
+        }
+
+        .insight-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .insight-content {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        .insight-action {
+            margin-top: 16px;
+            font-size: 14px;
+            color: #3b82f6;
+            cursor: pointer;
+        }
+
+        .insight-action:hover {
+            text-decoration: underline;
+        }
+
+        .tech-section {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-top: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .tech-section h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #111827;
+        }
+
+        .tech-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .tech-item:last-child {
+            border-bottom: none;
+        }
+
+        .tech-item h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+
+        .tech-item p {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        .tech-item ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
+        .tech-item li {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .code-block {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #374151;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <button class="back-btn" onclick="location.href='index.html'">←</button>
+            <h1>数据分析</h1>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-secondary export-btn" onclick="exportData()">
+                📊 导出报告
+            </button>
+            <button class="btn btn-primary" onclick="refreshData()">
+                🔄 刷新数据
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="date-range-selector">
+            <div class="date-range-buttons">
+                <button class="date-btn active" onclick="setDateRange('today')">今天</button>
+                <button class="date-btn" onclick="setDateRange('yesterday')">昨天</button>
+                <button class="date-btn" onclick="setDateRange('week')">最近7天</button>
+                <button class="date-btn" onclick="setDateRange('month')">最近30天</button>
+                <button class="date-btn" onclick="setDateRange('quarter')">最近90天</button>
+            </div>
+            <div class="custom-date-range">
+                <input type="date" class="date-input" id="startDate" value="2024-01-01">
+                <span>至</span>
+                <input type="date" class="date-input" id="endDate" value="2024-01-20">
+                <button class="btn btn-secondary" onclick="applyCustomDateRange()">应用</button>
+            </div>
+        </div>
+
+        <div class="filter-bar">
+            <div class="filter-group">
+                <div class="filter-label">知识库</div>
+                <select class="filter-select" id="knowledgeBaseFilter">
+                    <option value="all">全部知识库</option>
+                    <option value="product">产品文档库</option>
+                    <option value="tech">技术知识库</option>
+                    <option value="support">客户支持库</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <div class="filter-label">用户</div>
+                <select class="filter-select" id="userFilter">
+                    <option value="all">全部用户</option>
+                    <option value="admin">管理员</option>
+                    <option value="editor">编辑者</option>
+                    <option value="viewer">查看者</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <div class="filter-label">检索类型</div>
+                <select class="filter-select" id="searchTypeFilter">
+                    <option value="all">全部类型</option>
+                    <option value="semantic">语义检索</option>
+                    <option value="keyword">关键词检索</option>
+                    <option value="hybrid">混合检索</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <div class="filter-label">排序方式</div>
+                <select class="filter-select" id="sortFilter">
+                    <option value="count">按调用次数</option>
+                    <option value="time">按响应时间</option>
+                    <option value="accuracy">按准确率</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-title">总检索次数</div>
+                    <div class="stat-icon">🔍</div>
+                </div>
+                <div class="stat-value">12,345</div>
+                <div class="stat-change change-up">
+                    ↑ 15% 较上周
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-title">平均响应时间</div>
+                    <div class="stat-icon">⏱️</div>
+                </div>
+                <div class="stat-value">156ms</div>
+                <div class="stat-change change-down">
+                    ↓ 8% 较上周
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-title">检索准确率</div>
+                    <div class="stat-icon">🎯</div>
+                </div>
+                <div class="stat-value">92.3%</div>
+                <div class="stat-change change-up">
+                    ↑ 2.1% 较上周
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-title">活跃用户数</div>
+                    <div class="stat-icon">👥</div>
+                </div>
+                <div class="stat-value">156</div>
+                <div class="stat-change change-up">
+                    ↑ 23% 较上周
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">检索量趋势</div>
+                    <div class="chart-actions">
+                        <button class="btn-icon" title="日视图">📅</button>
+                        <button class="btn-icon" title="周视图">📆</button>
+                        <button class="btn-icon" title="月视图">🗓️</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-placeholder">
+                        检索量趋势图表（使用 Chart.js 或 ECharts）
+                        <br>
+                        X轴：时间，Y轴：检索次数
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">检索来源分布</div>
+                    <div class="chart-actions">
+                        <button class="btn-icon" title="饼图">🥧</button>
+                        <button class="btn-icon" title="环形图">⭕</button>
+                        <button class="btn-icon" title="条形图">📊</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-placeholder">
+                        检索来源分布图表
+                        <br>
+                        展示不同知识库的检索比例
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">响应时间分布</div>
+                    <div class="chart-actions">
+                        <button class="btn-icon" title="直方图">📈</button>
+                        <button class="btn-icon" title="箱线图">📦</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-placeholder">
+                        响应时间分布图表
+                        <br>
+                        展示不同响应时间区间的请求数量
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">用户活跃时段</div>
+                    <div class="chart-actions">
+                        <button class="btn-icon" title="热力图">🔥</button>
+                        <button class="btn-icon" title="折线图">📈</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-placeholder">
+                        用户活跃时段热力图
+                        <br>
+                        展示一天中不同时段的用户活跃度
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="insights-grid">
+            <div class="insight-card">
+                <div class="insight-header">
+                    <div class="insight-icon">💡</div>
+                    <div class="insight-title">性能优化建议</div>
+                </div>
+                <div class="insight-content">
+                    检索响应时间在高峰时段（10:00-12:00）增加了15%，建议：
+                    <br>• 优化向量数据库索引
+                    <br>• 增加缓存策略
+                    <br>• 考虑负载均衡
+                </div>
+                <div class="insight-action" onclick="viewPerformanceDetails()">查看详细建议 →</div>
+            </div>
+
+            <div class="insight-card">
+                <div class="insight-header">
+                    <div class="insight-icon">📈</div>
+                    <div class="insight-title">热门内容趋势</div>
+                </div>
+                <div class="insight-content">
+                    本周热门查询主题：
+                    <br>• API 使用文档（搜索量 +32%）
+                    <br>• 错误处理指南（搜索量 +18%）
+                    <br>• 部署配置（搜索量 +12%）
+                </div>
+                <div class="insight-action" onclick="viewContentTrends()">查看趋势分析 →</div>
+            </div>
+
+            <div class="insight-card">
+                <div class="insight-header">
+                    <div class="insight-icon">🎯</div>
+                    <div class="insight-title">检索质量分析</div>
+                </div>
+                <div class="insight-content">
+                    检索准确率：92.3%（较上周 +2.1%）
+                    <br>低准确率查询主要集中在：
+                    <br>• 技术术语（准确率 78%）
+                    <br>• 多语言混合查询（准确率 82%）
+                </div>
+                <div class="insight-action" onclick="viewQualityAnalysis()">查看详细分析 →</div>
+            </div>
+        </div>
+
+        <div class="table-card">
+            <div class="table-header">
+                <div class="table-title">热门查询 Top 10</div>
+                <div class="chart-actions">
+                    <button class="btn-icon" title="刷新">🔄</button>
+                    <button class="btn-icon" title="导出">📥</button>
+                </div>
+            </div>
+            <table class="analytics-table">
+                <thead>
+                    <tr>
+                        <th>排名</th>
+                        <th>查询内容</th>
+                        <th>检索次数</th>
+                        <th>平均响应时间</th>
+                        <th>用户满意度</th>
+                        <th>知识库</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>
+                            <div class="query-text">如何使用API接口？</div>
+                            <div style="font-size: 12px; color: #6b7280;">产品文档库</div>
+                        </td>
+                        <td class="query-count">856</td>
+                        <td>128ms</td>
+                        <td><span class="accuracy-badge accuracy-high">94%</span></td>
+                        <td><span class="knowledge-base-badge">产品文档库</span></td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>
+                            <div class="query-text">错误代码401解决方法</div>
+                            <div style="font-size: 12px; color: #6b7280;">技术知识库</div>
+                        </td>
+                        <td class="query-count">623</td>
+                        <td>142ms</td>
+                        <td><span class="accuracy-badge accuracy-high">92%</span></td>
+                        <td><span class="knowledge-base-badge">技术知识库</span></td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>
+                            <div class="query-text">部署配置要求</div>
+                            <div style="font-size: 12px; color: #6b7280;">产品文档库</div>
+                        </td>
+                        <td class="query-count">512</td>
+                        <td>156ms</td>
+                        <td><span class="accuracy-badge accuracy-medium">85%</span></td>
+                        <td><span class="knowledge-base-badge">产品文档库</span></td>
+                    </tr>
+                    <tr>
+                        <td>4</td>
+                        <td>
+                            <div class="query-text">数据库连接失败</div>
+                            <div style="font-size: 12px; color: #6b7280;">客户支持库</div>
+                        </td>
+                        <td class="query-count">487</td>
+                        <td>189ms</td>
+                        <td><span class="accuracy-badge accuracy-high">91%</span></td>
+                        <td><span class="knowledge-base-badge">客户支持库</span></td>
+                    </tr>
+                    <tr>
+                        <td>5</td>
+                        <td>
+                            <div class="query-text">用户权限管理</div>
+                            <div style="font-size: 12px; color: #6b7280;">产品文档库</div>
+                        </td>
+                        <td class="query-count">432</td>
+                        <td>134ms</td>
+                        <td><span class="accuracy-badge accuracy-high">93%</span></td>
+                        <td><span class="knowledge-base-badge">产品文档库</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-card">
+            <div class="table-header">
+                <div class="table-title">活跃用户 Top 10</div>
+                <div class="chart-actions">
+                    <button class="btn-icon" title="刷新">🔄</button>
+                    <button class="btn-icon" title="导出">📥</button>
+                </div>
+            </div>
+            <table class="analytics-table">
+                <thead>
+                    <tr>
+                        <th>用户</th>
+                        <th>检索次数</th>
+                        <th>文档上传</th>
+                        <th>知识库创建</th>
+                        <th>活跃度</th>
+                        <th>最后活跃</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="user-info">
+                                <div class="user-avatar">张</div>
+                                <div>
+                                    <div class="user-name">张三</div>
+                                    <div class="user-role">管理员</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>1,234</td>
+                        <td>45</td>
+                        <td>8</td>
+                        <td><span class="accuracy-badge accuracy-high">非常高</span></td>
+                        <td>2024-01-20 15:30</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="user-info">
+                                <div class="user-avatar">李</div>
+                                <div>
+                                    <div class="user-name">李四</div>
+                                    <div class="user-role">编辑者</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>987</td>
+                        <td>32</td>
+                        <td>5</td>
+                        <td><span class="accuracy-badge accuracy-high">高</span></td>
+                        <td>2024-01-20 14:15</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="user-info">
+                                <div class="user-avatar">王</div>
+                                <div>
+                                    <div class="user-name">王五</div>
+                                    <div class="user-role">查看者</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>765</td>
+                        <td>12</td>
+                        <td>2</td>
+                        <td><span class="accuracy-badge accuracy-medium">中</span></td>
+                        <td>2024-01-20 13:45</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="user-info">
+                                <div class="user-avatar">赵</div>
+                                <div>
+                                    <div class="user-name">赵六</div>
+                                    <div class="user-role">编辑者</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>654</td>
+                        <td>28</td>
+                        <td>4</td>
+                        <td><span class="accuracy-badge accuracy-high">高</span></td>
+                        <td>2024-01-20 12:20</td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="user-info">
+                                <div class="user-avatar">刘</div>
+                                <div>
+                                    <div class="user-name">刘七</div>
+                                    <div class="user-role">查看者</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>543</td>
+                        <td>8</td>
+                        <td>1</td>
+                        <td><span class="accuracy-badge accuracy-medium">中</span></td>
+                        <td>2024-01-20 11:30</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="tech-section">
+            <h2>📋 功能说明与技术实现</h2>
+
+            <div class="tech-item">
+                <h3>1. 数据采集与聚合</h3>
+                <p><strong>功能描述：</strong>收集系统使用数据并进行聚合分析。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>实时数据更新：WebSocket 推送最新统计数据</li>
+                    <li>数据筛选：多维度数据筛选和过滤</li>
+                    <li>数据可视化：使用 Chart.js、ECharts 等图表库</li>
+                    <li>交互式图表：支持缩放、拖拽、点击查看详情</li>
+                    <li>数据导出：支持 CSV、JSON、PDF 格式导出</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>事件追踪：记录用户操作和系统事件</li>
+                    <li>数据聚合：实时聚合分析使用数据</li>
+                    <li>时间序列数据库：使用 InfluxDB 或 TimescaleDB</li>
+                    <li>批处理任务：定期生成聚合报表</li>
+                    <li>数据清理：自动清理过期分析数据</li>
+                </ul>
+                <div class="code-block">
+# 数据采集服务
+class AnalyticsCollector:
+    def __init__(self):
+        self.influx_client = InfluxDBClient()
+        self.kafka_producer = KafkaProducer()
+
+    def track_search(self, user_id, query, knowledge_base_id, response_time, accuracy):
+        event = {
+            'event_type': 'search',
+            'user_id': user_id,
+            'query': query,
+            'knowledge_base_id': knowledge_base_id,
+            'response_time': response_time,
+            'accuracy': accuracy,
+            'timestamp': datetime.utcnow().isoformat()
+        }
+
+        # 存储到时间序列数据库
+        self.influx_client.write_points([{
+            "measurement": "search_events",
+            "tags": {
+                "user_id": user_id,
+                "knowledge_base_id": knowledge_base_id
+            },
+            "fields": {
+                "response_time": response_time,
+                "accuracy": accuracy,
+                "count": 1
+            },
+            "time": datetime.utcnow()
+        }])
+
+        # 发送到消息队列用于实时分析
+        self.kafka_producer.send('analytics_events', event)
+
+    def get_search_stats(self, start_time, end_time, filters=None):
+        query = f'''
+        SELECT MEAN(response_time) as avg_response_time,
+               COUNT(*) as search_count,
+               MEAN(accuracy) as avg_accuracy
+        FROM search_events
+        WHERE time >= '{start_time}' AND time <= '{end_time}'
+        '''
+
+        if filters:
+            for key, value in filters.items():
+                query += f" AND {key} = '{value}'"
+
+        result = self.influx_client.query(query)
+        return result.raw
+                </div>
+            </div>
+
+            <div class="tech-item">
+                <h3>2. 实时分析与监控</h3>
+                <p><strong>功能描述：</strong>实时监控系统性能和用户行为。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>实时仪表板：WebSocket 实时更新数据</li>
+                    <li>性能监控：实时显示系统性能指标</li>
+                    <li>异常检测：自动检测异常模式并告警</li>
+                    <li>自定义告警：用户可配置告警规则</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>流式处理：使用 Kafka 或 RabbitMQ 处理事件流</li>
+                    <li>实时计算：使用 Flink 或 Spark Streaming</li>
+                    <li>异常检测算法：基于统计和机器学习</li>
+                    <li>告警系统：支持多通道告警通知</li>
+                </ul>
+                <div class="code-block">
+# 实时分析引擎
+class RealtimeAnalyticsEngine:
+    def __init__(self):
+        self.spark = SparkSession.builder \
+            .appName("RealtimeAnalytics") \
+            .getOrCreate()
+
+        # 定义流式处理
+        self.stream = self.spark \
+            .readStream \
+            .format("kafka") \
+            .option("kafka.bootstrap.servers", "localhost:9092") \
+            .option("subscribe", "analytics_events") \
+            .load()
+
+    def process_search_stream(self):
+        # 解析 JSON 数据
+        search_df = self.stream \
+            .select(from_json(col("value").cast("string"), search_schema).alias("data")) \
+            .select("data.*")
+
+        # 窗口聚合
+        windowed_counts = search_df \
+            .withWatermark("timestamp", "10 minutes") \
+            .groupBy(
+                window(col("timestamp"), "5 minutes"),
+                col("knowledge_base_id")
+            ) \
+            .agg(
+                count("*").alias("search_count"),
+                avg("response_time").alias("avg_response_time"),
+                avg("accuracy").alias("avg_accuracy")
+            )
+
+        # 输出到控制台（实际项目中可输出到数据库或消息队列）
+        query = windowed_counts \
+            .writeStream \
+            .outputMode("complete") \
+            .format("console") \
+            .start()
+
+        query.awaitTermination()
+                </div>
+            </div>
+
+            <div class="tech-item">
+                <h3>3. 用户行为分析</h3>
+                <p><strong>功能描述：</strong>分析用户行为模式，优化用户体验。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>用户旅程地图：可视化用户操作路径</li>
+                    <li>热力图分析：展示页面点击热区</li>
+                    <li>转化率分析：分析用户任务完成率</li>
+                    <li>留存分析：分析用户活跃度和留存率</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>用户行为建模：建立用户行为模型</li>
+                    <li>聚类分析：将用户分为不同群体</li>
+                    <li>预测模型：预测用户流失和活跃度</li>
+                    <li>A/B 测试：支持功能 A/B 测试</li>
+                </ul>
+                <div class="code-block">
+# 用户行为分析
+class UserBehaviorAnalyzer:
+    def __init__(self):
+        self.db = AnalyticsDatabase()
+
+    def analyze_user_segments(self):
+        # 获取用户行为数据
+        user_data = self.db.get_user_behavior_data()
+
+        # 特征工程
+        features = self.extract_features(user_data)
+
+        # 聚类分析
+        from sklearn.cluster import KMeans
+        kmeans = KMeans(n_clusters=5, random_state=42)
+        clusters = kmeans.fit_predict(features)
+
+        # 分析每个群体的特征
+        segments = {}
+        for i in range(5):
+            segment_users = user_data[clusters == i]
+            segments[f'segment_{i}'] = {
+                'size': len(segment_users),
+                'avg_search_count': segment_users['search_count'].mean(),
+                'avg_session_duration': segment_users['session_duration'].mean(),
+                'avg_accuracy': segment_users['accuracy'].mean()
+            }
+
+        return segments
+
+    def predict_user_churn(self, user_id):
+        # 获取用户特征
+        user_features = self.get_user_features(user_id)
+
+        # 使用训练好的模型预测
+        model = self.load_churn_model()
+        churn_probability = model.predict_proba([user_features])[0][1]
+
+        return churn_probability
+                </div>
+            </div>
+
+            <div class="tech-item">
+                <h3>4. 检索效果分析</h3>
+                <p><strong>功能描述：</strong>评估检索系统效果，优化检索算法。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>准确率分析：分析不同查询的检索准确率</li>
+                    <li>响应时间分析：分析检索响应时间分布</li>
+                    <li>相关性评估：人工标注和自动评估结合</li>
+                    <li>A/B 测试：比较不同检索算法的效果</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>检索日志分析：分析检索日志中的模式</li>
+                    <li>相关性评估：使用 NDCG、MRR 等指标</li>
+                    <li>算法优化：基于分析结果优化检索算法</li>
+                    <li>自动调参：自动调整检索参数</li>
+                </ul>
+                <div class="code-block">
+# 检索效果评估
+class SearchPerformanceEvaluator:
+    def __init__(self):
+        self.db = SearchLogDatabase()
+
+    def evaluate_search_accuracy(self, start_time, end_time):
+        # 获取检索日志
+        logs = self.db.get_search_logs(start_time, end_time)
+
+        # 计算准确率指标
+        total_searches = len(logs)
+        successful_searches = len([log for log in logs if log['accuracy'] >= 0.8])
+
+        accuracy = successful_searches / total_searches if total_searches > 0 else 0
+
+        # 分析低准确率查询
+        low_accuracy_queries = [
+            log for log in logs
+            if log['accuracy'] < 0.7
+        ]
+
+        # 按查询分组分析
+        query_analysis = {}
+        for log in logs:
+            query = log['query']
+            if query not in query_analysis:
+                query_analysis[query] = {
+                    'count': 0,
+                    'total_accuracy': 0,
+                    'response_times': []
+                }
+
+            query_analysis[query]['count'] += 1
+            query_analysis[query]['total_accuracy'] += log['accuracy']
+            query_analysis[query]['response_times'].append(log['response_time'])
+
+        # 计算平均指标
+        for query, data in query_analysis.items():
+            data['avg_accuracy'] = data['total_accuracy'] / data['count']
+            data['avg_response_time'] = sum(data['response_times']) / len(data['response_times'])
+
+        return {
+            'overall_accuracy': accuracy,
+            'total_searches': total_searches,
+            'successful_searches': successful_searches,
+            'low_accuracy_queries': low_accuracy_queries,
+            'query_analysis': query_analysis
+        }
+                </div>
+            </div>
+
+            <div class="tech-item">
+                <h3>5. 报表生成与导出</h3>
+                <p><strong>功能描述：</strong>生成分析报表并支持导出。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>报表模板：预定义报表模板</li>
+                    <li>自定义报表：用户自定义分析维度</li>
+                    <li>导出格式：支持 PDF、Excel、CSV 等格式</li>
+                    <li>定时报表：支持定时生成和发送报表</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>报表生成引擎：基于模板生成报表</li>
+                    <li>数据导出服务：支持多种格式导出</li>
+                    <li>异步处理：大报表异步生成</li>
+                    <li>报表缓存：缓存常用报表提升性能</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 日期范围选择
+        function setDateRange(range) {
+            // 更新按钮状态
+            document.querySelectorAll('.date-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // 模拟加载数据
+            loadAnalyticsData(range);
+        }
+
+        function applyCustomDateRange() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            if (!startDate || !endDate) {
+                alert('请选择开始日期和结束日期');
+                return;
+            }
+
+            // 模拟加载数据
+            loadAnalyticsData('custom', { startDate, endDate });
+        }
+
+        function loadAnalyticsData(range, customParams = null) {
+            // 显示加载状态
+            console.log(`加载数据，范围：${range}`, customParams);
+
+            // 实际项目中这里应该调用API获取数据
+            // 并更新图表和数据
+        }
+
+        // 数据导出
+        function exportData() {
+            const format = prompt('请选择导出格式：\n1. PDF\n2. Excel\n3. CSV', 'PDF');
+
+            if (format) {
+                alert(`开始导出 ${format} 格式的报告...\n（实际项目中应开始异步导出任务）`);
+            }
+        }
+
+        // 刷新数据
+        function refreshData() {
+            // 重新加载当前选中的日期范围
+            const activeRange = document.querySelector('.date-btn.active');
+            if (activeRange) {
+                loadAnalyticsData(activeRange.textContent.trim());
+            } else {
+                loadAnalyticsData('today');
+            }
+
+            alert('数据已刷新');
+        }
+
+        // 查看详细分析
+        function viewPerformanceDetails() {
+            alert('跳转到性能优化建议详情页面');
+        }
+
+        function viewContentTrends() {
+            alert('跳转到内容趋势分析页面');
+        }
+
+        function viewQualityAnalysis() {
+            alert('跳转到检索质量分析页面');
+        }
+
+        // 筛选器变化
+        document.querySelectorAll('.filter-select').forEach(select => {
+            select.addEventListener('change', function() {
+                // 应用筛选条件
+                applyFilters();
+            });
+        });
+
+        function applyFilters() {
+            const filters = {
+                knowledgeBase: document.getElementById('knowledgeBaseFilter').value,
+                user: document.getElementById('userFilter').value,
+                searchType: document.getElementById('searchTypeFilter').value,
+                sort: document.getElementById('sortFilter').value
+            };
+
+            console.log('应用筛选条件：', filters);
+
+            // 实际项目中应该重新加载数据并更新图表
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 设置默认日期
+            const today = new Date();
+            const weekAgo = new Date();
+            weekAgo.setDate(today.getDate() - 7);
+
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
+            document.getElementById('startDate').value = weekAgo.toISOString().split('T')[0];
+
+            // 模拟加载初始数据
+            loadAnalyticsData('today');
+        });
+    </script>
+</body>
+</html>
