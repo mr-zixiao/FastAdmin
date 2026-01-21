@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识库设置 - Dify</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            color: #1f2937;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .back-btn {
+            padding: 8px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 24px auto;
+            padding: 0 24px;
+        }
+        
+        .settings-card {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .settings-card h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #111827;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        
+        .form-label-hint {
+            font-size: 13px;
+            color: #6b7280;
+            font-weight: normal;
+            margin-left: 8px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        
+        .form-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .radio-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .radio-item:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .radio-item input[type="radio"] {
+            margin-right: 12px;
+        }
+        
+        .radio-item-label {
+            flex: 1;
+        }
+        
+        .radio-item-title {
+            font-weight: 500;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+        
+        .radio-item-desc {
+            font-size: 13px;
+            color: #6b7280;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #d1d5db;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #3b82f6;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        
+        .tech-section {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-top: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .tech-section h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #111827;
+        }
+        
+        .tech-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .tech-item:last-child {
+            border-bottom: none;
+        }
+        
+        .tech-item h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+        
+        .tech-item p {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+        
+        .tech-item ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+        
+        .tech-item li {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        
+        .code-block {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #374151;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <button class="back-btn" onclick="location.href='index.html'">←</button>
+            <h1>知识库设置</h1>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="settings-card">
+            <h2>基本信息</h2>
+            <div class="form-group">
+                <label class="form-label">知识库名称 <span class="form-label-hint">（必填）</span></label>
+                <input type="text" class="form-input" value="产品文档库" placeholder="请输入知识库名称">
+            </div>
+            <div class="form-group">
+                <label class="form-label">描述</label>
+                <textarea class="form-textarea" placeholder="请输入知识库描述">包含所有产品相关的文档、API文档、用户手册等</textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">知识库类型</label>
+                <select class="form-select">
+                    <option>文档库</option>
+                    <option>网页库</option>
+                    <option>混合库</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="settings-card">
+            <h2>分块设置</h2>
+            <div class="form-group">
+                <label class="form-label">分块策略</label>
+                <div class="radio-group">
+                    <label class="radio-item">
+                        <input type="radio" name="chunk_strategy" value="auto" checked>
+                        <div class="radio-item-label">
+                            <div class="radio-item-title">自动分块（推荐）</div>
+                            <div class="radio-item-desc">系统自动根据文档类型选择最佳分块策略</div>
+                        </div>
+                    </label>
+                    <label class="radio-item">
+                        <input type="radio" name="chunk_strategy" value="fixed">
+                        <div class="radio-item-label">
+                            <div class="radio-item-title">固定长度分块</div>
+                            <div class="radio-item-desc">按固定字符数分割文档</div>
+                        </div>
+                    </label>
+                    <label class="radio-item">
+                        <input type="radio" name="chunk_strategy" value="semantic">
+                        <div class="radio-item-label">
+                            <div class="radio-item-title">语义分块</div>
+                            <div class="radio-item-desc">基于句子和段落边界进行语义分块</div>
+                        </div>
+                    </label>
+                    <label class="radio-item">
+                        <input type="radio" name="chunk_strategy" value="markdown">
+                        <div class="radio-item-label">
+                            <div class="radio-item-title">Markdown分块</div>
+                            <div class="radio-item-desc">按Markdown标题层级分块</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">分块大小（字符数）</label>
+                    <input type="number" class="form-input" value="512" min="100" max="2000">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">分块重叠（字符数）</label>
+                    <input type="number" class="form-input" value="50" min="0" max="200">
+                </div>
+            </div>
+        </div>
+        
+        <div class="settings-card">
+            <h2>向量化设置</h2>
+            <div class="form-group">
+                <label class="form-label">Embedding 模型</label>
+                <select class="form-select">
+                    <option>text-embedding-3-small (OpenAI)</option>
+                    <option>text-embedding-ada-002 (OpenAI)</option>
+                    <option>text-embedding-3-large (OpenAI)</option>
+                    <option>BGE-large-zh (本地)</option>
+                    <option>m3e-base (本地)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">向量维度</label>
+                <input type="number" class="form-input" value="1536" readonly>
+                <span class="form-label-hint">（由模型决定，不可修改）</span>
+            </div>
+            <div class="form-group">
+                <label class="form-label">向量数据库</label>
+                <select class="form-select">
+                    <option>Qdrant（默认）</option>
+                    <option>Pinecone</option>
+                    <option>Weaviate</option>
+                    <option>Milvus</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="settings-card">
+            <h2>检索设置</h2>
+            <div class="form-group">
+                <label class="form-label">检索模式</label>
+                <div class="radio-group">
+                    <label class="radio-item">
+                        <input type="radio" name="retrieval_mode" value="semantic" checked>
+                        <div class="radio-item-label">
+                            <div class="radio-item-title">语义检索</div>
+                            <div class="radio-item-desc">基于向量相似度检索，适合语义理解</div>
+                        </div>
+                    </label>
+                    <label class="radio-item">
+                        <input type="radio" name="retrieval_mode" value="keyword">
+                        <div class="radio-item-label">
+                            <div class="radio-item-title">关键词检索</div>
+                            <div class="radio-item-desc">基于关键词匹配，适合精确查找</div>
+                        </div>
+                    </label>
+                    <label class="radio-item">
+                        <input type="radio" name="retrieval_mode" value="hybrid">
+                        <div class="radio-item-label">
+                            <div class="radio-item-title">混合检索</div>
+                            <div class="radio-item-desc">结合语义和关键词检索，效果最佳</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Top K（返回结果数）</label>
+                    <input type="number" class="form-input" value="5" min="1" max="20">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">相似度阈值</label>
+                    <input type="number" class="form-input" value="0.7" min="0" max="1" step="0.1">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">
+                    <span>启用重排序（Rerank）</span>
+                    <label class="switch" style="margin-left: 12px;">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
+                </label>
+                <span class="form-label-hint">使用重排序模型优化检索结果顺序</span>
+            </div>
+        </div>
+        
+        <div class="settings-card">
+            <h2>高级设置</h2>
+            <div class="form-group">
+                <label class="form-label">
+                    <span>自动索引</span>
+                    <label class="switch" style="margin-left: 12px;">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
+                </label>
+                <span class="form-label-hint">上传文档后自动开始索引</span>
+            </div>
+            <div class="form-group">
+                <label class="form-label">
+                    <span>增量更新</span>
+                    <label class="switch" style="margin-left: 12px;">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
+                </label>
+                <span class="form-label-hint">文档更新时只重新索引变更部分</span>
+            </div>
+            <div class="form-group">
+                <label class="form-label">索引优先级</label>
+                <select class="form-select">
+                    <option>正常</option>
+                    <option>高</option>
+                    <option>低</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <button class="btn btn-secondary" onclick="location.href='index.html'">取消</button>
+            <button class="btn btn-primary">保存设置</button>
+        </div>
+        
+        <div class="tech-section">
+            <h2>📋 功能说明与技术实现</h2>
+            
+            <div class="tech-item">
+                <h3>1. 分块策略配置</h3>
+                <p><strong>功能描述：</strong>配置文档分块的方式和参数。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>表单组件收集分块配置参数</li>
+                    <li>实时预览分块效果（可选）</li>
+                    <li>参数验证（分块大小、重叠范围）</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>PUT /api/v1/knowledge-bases/{id}/settings - 更新设置</li>
+                    <li>存储配置到数据库（knowledge_base_settings 表）</li>
+                    <li>配置变更时触发重新索引（可选）</li>
+                </ul>
+                <p><strong>AI端实现：</strong></p>
+                <ul>
+                    <li>根据配置选择对应的 TextSplitter</li>
+                    <li>实现多种分块策略：
+                        <ul>
+                            <li>RecursiveCharacterTextSplitter - 递归字符分块</li>
+                            <li>MarkdownHeaderTextSplitter - Markdown分块</li>
+                            <li>SemanticChunker - 语义分块（使用NLP模型）</li>
+                        </ul>
+                    </li>
+                </ul>
+                <div class="code-block">
+# 分块策略实现
+def get_text_splitter(strategy, chunk_size, chunk_overlap):
+    if strategy == 'fixed':
+        return RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap
+        )
+    elif strategy == 'semantic':
+        return SemanticChunker(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap
+        )
+    elif strategy == 'markdown':
+        return MarkdownHeaderTextSplitter(
+            chunk_size=chunk_size
+        )
+                </div>
+            </div>
+            
+            <div class="tech-item">
+                <h3>2. Embedding 模型配置</h3>
+                <p><strong>功能描述：</strong>选择用于向量化的 Embedding 模型。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>下拉选择器展示可用模型列表</li>
+                    <li>显示模型信息（维度、提供商、价格等）</li>
+                    <li>模型切换时的警告提示</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>GET /api/v1/models/embeddings - 获取可用模型列表</li>
+                    <li>模型配置存储到数据库</li>
+                    <li>模型切换时触发重新向量化（可选）</li>
+                </ul>
+                <p><strong>AI端实现：</strong></p>
+                <ul>
+                    <li>模型工厂模式管理不同模型</li>
+                    <li>支持 OpenAI、本地模型（BGE、M3E等）</li>
+                    <li>统一的 Embedding 接口</li>
+                </ul>
+                <div class="code-block">
+# Embedding 模型工厂
+class EmbeddingModelFactory:
+    @staticmethod
+    def create(model_name):
+        if model_name.startswith('text-embedding'):
+            return OpenAIEmbedding(model_name)
+        elif model_name == 'BGE-large-zh':
+            return LocalEmbedding('BGE-large-zh')
+        # ...
+                </div>
+            </div>
+            
+            <div class="tech-item">
+                <h3>3. 检索模式配置</h3>
+                <p><strong>功能描述：</strong>配置检索算法和参数。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>单选按钮组选择检索模式</li>
+                    <li>参数输入（Top K、相似度阈值）</li>
+                    <li>开关控制重排序功能</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>检索配置存储到数据库</li>
+                    <li>检索时读取配置并应用</li>
+                </ul>
+                <p><strong>AI端实现：</strong></p>
+                <ul>
+                    <li>语义检索：向量相似度搜索（cosine similarity）</li>
+                    <li>关键词检索：BM25/TF-IDF 算法</li>
+                    <li>混合检索：结合两种检索结果，加权融合</li>
+                    <li>重排序：使用 Cross-Encoder 模型重新排序</li>
+                </ul>
+                <div class="code-block">
+# 混合检索实现
+def hybrid_search(query, top_k=5):
+    # 语义检索
+    semantic_results = vector_search(query, top_k=top_k*2)
+    # 关键词检索
+    keyword_results = bm25_search(query, top_k=top_k*2)
+    # 融合结果
+    merged_results = merge_results(
+        semantic_results, keyword_results,
+        semantic_weight=0.7, keyword_weight=0.3
+    )
+    # 重排序
+    if rerank_enabled:
+        return rerank(query, merged_results[:top_k])
+    return merged_results[:top_k]
+                </div>
+            </div>
+            
+            <div class="tech-item">
+                <h3>4. 向量数据库配置</h3>
+                <p><strong>功能描述：</strong>选择向量存储的数据库。</p>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>支持多种向量数据库（Qdrant、Pinecone、Weaviate、Milvus）</li>
+                    <li>数据库连接配置管理</li>
+                    <li>统一的向量数据库接口（抽象层）</li>
+                </ul>
+                <p><strong>AI端实现：</strong></p>
+                <ul>
+                    <li>向量数据库适配器模式</li>
+                    <li>统一的 CRUD 接口（insert、search、delete）</li>
+                    <li>批量操作优化</li>
+                </ul>
+                <div class="code-block">
+# 向量数据库抽象接口
+class VectorDB:
+    def insert(self, vectors, metadata):
+        raise NotImplementedError
+    
+    def search(self, query_vector, top_k):
+        raise NotImplementedError
+    
+    def delete(self, ids):
+        raise NotImplementedError
+
+# Qdrant 实现
+class QdrantDB(VectorDB):
+    def __init__(self, url, collection_name):
+        self.client = QdrantClient(url=url)
+        self.collection = collection_name
+    
+    def search(self, query_vector, top_k):
+        return self.client.search(
+            collection_name=self.collection,
+            query_vector=query_vector,
+            limit=top_k
+        )
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

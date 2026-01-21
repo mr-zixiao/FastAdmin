@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识库详情 - Dify</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            color: #1f2937;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .back-btn {
+            padding: 8px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 24px auto;
+            padding: 0 24px;
+        }
+        
+        .kb-info-card {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .kb-info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        
+        .kb-info-left {
+            flex: 1;
+        }
+        
+        .kb-title-large {
+            font-size: 24px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+        
+        .kb-description {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 16px;
+        }
+        
+        .kb-stats-row {
+            display: flex;
+            gap: 32px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-box {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        .stat-label {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 8px;
+            border-bottom: 2px solid #e5e7eb;
+            margin-bottom: 24px;
+        }
+        
+        .tab {
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #6b7280;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+        
+        .tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .documents-table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .table-header {
+            background: #f9fafb;
+            padding: 12px 16px;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 120px;
+            gap: 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .table-row {
+            padding: 16px;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 120px;
+            gap: 16px;
+            border-bottom: 1px solid #f3f4f6;
+            align-items: center;
+        }
+        
+        .table-row:hover {
+            background: #f9fafb;
+        }
+        
+        .doc-name {
+            font-weight: 500;
+            color: #111827;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .doc-icon {
+            font-size: 18px;
+        }
+        
+        .doc-size {
+            font-size: 13px;
+            color: #6b7280;
+        }
+        
+        .doc-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-processing {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .doc-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-icon {
+            padding: 6px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            color: #6b7280;
+        }
+        
+        .btn-icon:hover {
+            background: #f3f4f6;
+            color: #111827;
+        }
+        
+        .tech-section {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-top: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .tech-section h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #111827;
+        }
+        
+        .tech-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .tech-item:last-child {
+            border-bottom: none;
+        }
+        
+        .tech-item h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+        
+        .tech-item p {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+        
+        .tech-item ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+        
+        .tech-item li {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        
+        .code-block {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #374151;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <button class="back-btn" onclick="location.href='index.html'">←</button>
+            <h1>产品文档库</h1>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="location.href='knowledge-base-test.html'">测试检索</button>
+            <button class="btn btn-secondary" onclick="location.href='knowledge-base-settings.html'">设置</button>
+            <button class="btn btn-primary" onclick="location.href='document-upload.html'">上传文档</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="kb-info-card">
+            <div class="kb-info-header">
+                <div class="kb-info-left">
+                    <div class="kb-title-large">产品文档库</div>
+                    <div class="kb-description">包含所有产品相关的文档、API文档、用户手册等</div>
+                    <div class="kb-stats-row">
+                        <div class="stat-box">
+                            <div class="stat-value">156</div>
+                            <div class="stat-label">文档总数</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">2.3M</div>
+                            <div class="stat-label">总字符数</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">45K</div>
+                            <div class="stat-label">向量数量</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">98.5%</div>
+                            <div class="stat-label">索引完成度</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value">2024-01-20</div>
+                            <div class="stat-label">最后更新</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('documents')">文档管理</button>
+            <button class="tab" onclick="switchTab('chunks')">文档分块</button>
+            <button class="tab" onclick="switchTab('usage')">使用统计</button>
+        </div>
+        
+        <div id="documents" class="tab-content active">
+            <div class="documents-table">
+                <div class="table-header">
+                    <div>文档名称</div>
+                    <div>大小</div>
+                    <div>状态</div>
+                    <div>上传时间</div>
+                    <div>操作</div>
+                </div>
+                <div class="table-row">
+                    <div class="doc-name">
+                        <span class="doc-icon">📄</span>
+                        <div>
+                            <div>产品使用手册.pdf</div>
+                            <div class="doc-size">2.5 MB</div>
+                        </div>
+                    </div>
+                    <div>2.5 MB</div>
+                    <div><span class="doc-status status-success">已完成</span></div>
+                    <div>2024-01-20 10:30</div>
+                    <div class="doc-actions">
+                        <button class="btn-icon" title="预览">👁️</button>
+                        <button class="btn-icon" title="下载">⬇️</button>
+                        <button class="btn-icon" title="删除">🗑️</button>
+                    </div>
+                </div>
+                <div class="table-row">
+                    <div class="doc-name">
+                        <span class="doc-icon">📄</span>
+                        <div>
+                            <div>API接口文档.docx</div>
+                            <div class="doc-size">1.8 MB</div>
+                        </div>
+                    </div>
+                    <div>1.8 MB</div>
+                    <div><span class="doc-status status-success">已完成</span></div>
+                    <div>2024-01-19 15:20</div>
+                    <div class="doc-actions">
+                        <button class="btn-icon" title="预览">👁️</button>
+                        <button class="btn-icon" title="下载">⬇️</button>
+                        <button class="btn-icon" title="删除">🗑️</button>
+                    </div>
+                </div>
+                <div class="table-row">
+                    <div class="doc-name">
+                        <span class="doc-icon">📄</span>
+                        <div>
+                            <div>用户指南.md</div>
+                            <div class="doc-size">856 KB</div>
+                        </div>
+                    </div>
+                    <div>856 KB</div>
+                    <div><span class="doc-status status-processing">索引中</span></div>
+                    <div>2024-01-20 14:15</div>
+                    <div class="doc-actions">
+                        <button class="btn-icon" title="预览">👁️</button>
+                        <button class="btn-icon" title="下载">⬇️</button>
+                        <button class="btn-icon" title="删除">🗑️</button>
+                    </div>
+                </div>
+                <div class="table-row">
+                    <div class="doc-name">
+                        <span class="doc-icon">🌐</span>
+                        <div>
+                            <div>https://docs.example.com/api</div>
+                            <div class="doc-size">网页抓取</div>
+                        </div>
+                    </div>
+                    <div>-</div>
+                    <div><span class="doc-status status-success">已完成</span></div>
+                    <div>2024-01-18 09:00</div>
+                    <div class="doc-actions">
+                        <button class="btn-icon" title="预览">👁️</button>
+                        <button class="btn-icon" title="刷新">🔄</button>
+                        <button class="btn-icon" title="删除">🗑️</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="chunks" class="tab-content">
+            <div class="documents-table">
+                <div class="table-header">
+                    <div>分块内容预览</div>
+                    <div>所属文档</div>
+                    <div>字符数</div>
+                    <div>向量维度</div>
+                    <div>操作</div>
+                </div>
+                <div class="table-row">
+                    <div>产品概述：我们的产品是一个强大的AI助手平台，提供...</div>
+                    <div>产品使用手册.pdf</div>
+                    <div>512</div>
+                    <div>1536</div>
+                    <div class="doc-actions">
+                        <button class="btn-icon" title="查看">👁️</button>
+                    </div>
+                </div>
+                <div class="table-row">
+                    <div>API认证：所有API请求都需要在Header中包含Authorization...</div>
+                    <div>API接口文档.docx</div>
+                    <div>498</div>
+                    <div>1536</div>
+                    <div class="doc-actions">
+                        <button class="btn-icon" title="查看">👁️</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="usage" class="tab-content">
+            <div class="kb-info-card">
+                <h3 style="margin-bottom: 16px;">使用统计</h3>
+                <div class="kb-stats-row">
+                    <div class="stat-box">
+                        <div class="stat-value">1,234</div>
+                        <div class="stat-label">总检索次数</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">856</div>
+                        <div class="stat-label">本月检索</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">2.3s</div>
+                        <div class="stat-label">平均响应时间</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">95.2%</div>
+                        <div class="stat-label">检索准确率</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tech-section">
+            <h2>📋 功能说明与技术实现</h2>
+            
+            <div class="tech-item">
+                <h3>1. 知识库详情展示</h3>
+                <p><strong>功能描述：</strong>展示知识库的详细信息，包括统计信息、文档列表、分块信息等。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>Tab 切换组件展示不同视图（文档、分块、统计）</li>
+                    <li>表格组件展示文档列表，支持排序、筛选</li>
+                    <li>实时更新文档索引状态（WebSocket）</li>
+                    <li>虚拟滚动优化大量文档展示</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>GET /api/v1/knowledge-bases/{id} - 获取知识库详情</li>
+                    <li>GET /api/v1/knowledge-bases/{id}/documents - 获取文档列表</li>
+                    <li>GET /api/v1/knowledge-bases/{id}/chunks - 获取分块列表</li>
+                    <li>聚合查询统计信息（文档数、字符数、向量数）</li>
+                    <li>使用 JOIN 查询优化性能</li>
+                </ul>
+            </div>
+            
+            <div class="tech-item">
+                <h3>2. 文档管理</h3>
+                <p><strong>功能描述：</strong>管理知识库中的文档，包括查看、下载、删除等操作。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>文档预览组件（PDF.js、Markdown渲染器等）</li>
+                    <li>文件下载功能（Blob URL）</li>
+                    <li>确认对话框防止误删除</li>
+                    <li>批量操作支持（多选、批量删除）</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>DELETE /api/v1/documents/{id} - 删除文档</li>
+                    <li>GET /api/v1/documents/{id}/download - 下载文档</li>
+                    <li>GET /api/v1/documents/{id}/preview - 预览文档</li>
+                    <li>级联删除关联的向量数据</li>
+                    <li>文件存储服务（S3/OSS）管理文件</li>
+                </ul>
+            </div>
+            
+            <div class="tech-item">
+                <h3>3. 文档分块展示</h3>
+                <p><strong>功能描述：</strong>展示文档的分块信息，包括分块内容、向量维度等。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>分块列表展示，支持搜索和筛选</li>
+                    <li>分块内容预览（截断显示）</li>
+                    <li>点击查看完整分块内容</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>GET /api/v1/documents/{id}/chunks - 获取文档分块</li>
+                    <li>支持分页查询</li>
+                    <li>返回分块元数据（字符数、向量维度、位置信息）</li>
+                </ul>
+            </div>
+            
+            <div class="tech-item">
+                <h3>4. 使用统计</h3>
+                <p><strong>功能描述：</strong>展示知识库的使用情况，包括检索次数、响应时间、准确率等。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>图表组件展示统计数据（Chart.js/ECharts）</li>
+                    <li>时间范围选择器</li>
+                    <li>数据导出功能</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>GET /api/v1/knowledge-bases/{id}/statistics - 获取统计数据</li>
+                    <li>时间序列数据库存储检索日志（InfluxDB/TimescaleDB）</li>
+                    <li>聚合查询计算统计指标</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function switchTab(tabName) {
+            // 隐藏所有tab内容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            // 移除所有tab的active状态
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            // 显示选中的tab内容
+            document.getElementById(tabName).classList.add('active');
+            // 设置选中的tab为active
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
+

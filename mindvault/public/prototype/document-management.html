@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文档管理 - Dify</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            color: #1f2937;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .back-btn {
+            padding: 8px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 24px auto;
+            padding: 0 24px;
+        }
+        
+        .toolbar {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .toolbar-left {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .search-input {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            width: 300px;
+        }
+        
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .toolbar-right {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .documents-table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .table-header {
+            background: #f9fafb;
+            padding: 12px 16px;
+            display: grid;
+            grid-template-columns: 40px 2fr 1fr 120px 120px 150px;
+            gap: 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .table-row {
+            padding: 16px;
+            display: grid;
+            grid-template-columns: 40px 2fr 1fr 120px 120px 150px;
+            gap: 16px;
+            border-bottom: 1px solid #f3f4f6;
+            align-items: center;
+        }
+        
+        .table-row:hover {
+            background: #f9fafb;
+        }
+        
+        .table-row.selected {
+            background: #eff6ff;
+        }
+        
+        .doc-name {
+            font-weight: 500;
+            color: #111827;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .doc-icon {
+            font-size: 18px;
+        }
+        
+        .doc-size {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        
+        .doc-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-processing {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status-pending {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .doc-progress {
+            font-size: 13px;
+            color: #6b7280;
+        }
+        
+        .doc-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-icon {
+            padding: 6px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            color: #6b7280;
+        }
+        
+        .btn-icon:hover {
+            background: #f3f4f6;
+            color: #111827;
+        }
+        
+        .batch-actions {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .batch-actions.show {
+            display: flex;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin-top: 24px;
+        }
+        
+        .page-btn {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .page-btn:hover {
+            background: #f3f4f6;
+        }
+        
+        .page-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        
+        .tech-section {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-top: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .tech-section h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #111827;
+        }
+        
+        .tech-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .tech-item:last-child {
+            border-bottom: none;
+        }
+        
+        .tech-item h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+        
+        .tech-item p {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+        
+        .tech-item ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+        
+        .tech-item li {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        
+        .code-block {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #374151;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <button class="back-btn" onclick="location.href='knowledge-base-detail.html'">←</button>
+            <h1>文档管理</h1>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="location.href='document-upload.html'">批量上传</button>
+            <button class="btn btn-primary" onclick="location.href='document-upload.html'">上传文档</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="batch-actions" id="batchActions">
+            <span id="selectedCount">已选择 0 项</span>
+            <button class="btn btn-secondary" onclick="batchReindex()">重新索引</button>
+            <button class="btn btn-secondary" onclick="batchDownload()">批量下载</button>
+            <button class="btn btn-secondary" style="color: #dc2626;" onclick="batchDelete()">批量删除</button>
+        </div>
+        
+        <div class="toolbar">
+            <div class="toolbar-left">
+                <input type="text" class="search-input" placeholder="搜索文档名称...">
+                <select class="filter-select">
+                    <option>全部状态</option>
+                    <option>已完成</option>
+                    <option>索引中</option>
+                    <option>待处理</option>
+                    <option>失败</option>
+                </select>
+                <select class="filter-select">
+                    <option>全部类型</option>
+                    <option>PDF</option>
+                    <option>Word</option>
+                    <option>Markdown</option>
+                    <option>网页</option>
+                </select>
+            </div>
+            <div class="toolbar-right">
+                <button class="btn btn-secondary">导出列表</button>
+            </div>
+        </div>
+        
+        <div class="documents-table">
+            <div class="table-header">
+                <div><input type="checkbox" class="checkbox" id="selectAll" onchange="toggleSelectAll()"></div>
+                <div>文档名称</div>
+                <div>类型</div>
+                <div>状态</div>
+                <div>上传时间</div>
+                <div>操作</div>
+            </div>
+            <div class="table-row">
+                <div><input type="checkbox" class="checkbox" onchange="updateBatchActions()"></div>
+                <div class="doc-name">
+                    <span class="doc-icon">📄</span>
+                    <div>
+                        <div>产品使用手册.pdf</div>
+                        <div class="doc-size">2.5 MB</div>
+                    </div>
+                </div>
+                <div>PDF</div>
+                <div><span class="doc-status status-success">已完成</span></div>
+                <div>2024-01-20 10:30</div>
+                <div class="doc-actions">
+                    <button class="btn-icon" title="预览">👁️</button>
+                    <button class="btn-icon" title="下载">⬇️</button>
+                    <button class="btn-icon" title="重新索引">🔄</button>
+                    <button class="btn-icon" title="删除">🗑️</button>
+                </div>
+            </div>
+            <div class="table-row">
+                <div><input type="checkbox" class="checkbox" onchange="updateBatchActions()"></div>
+                <div class="doc-name">
+                    <span class="doc-icon">📄</span>
+                    <div>
+                        <div>API接口文档.docx</div>
+                        <div class="doc-size">1.8 MB</div>
+                    </div>
+                </div>
+                <div>Word</div>
+                <div><span class="doc-status status-success">已完成</div>
+                <div>2024-01-19 15:20</div>
+                <div class="doc-actions">
+                    <button class="btn-icon" title="预览">👁️</button>
+                    <button class="btn-icon" title="下载">⬇️</button>
+                    <button class="btn-icon" title="重新索引">🔄</button>
+                    <button class="btn-icon" title="删除">🗑️</button>
+                </div>
+            </div>
+            <div class="table-row">
+                <div><input type="checkbox" class="checkbox" onchange="updateBatchActions()"></div>
+                <div class="doc-name">
+                    <span class="doc-icon">📄</span>
+                    <div>
+                        <div>用户指南.md</div>
+                        <div class="doc-size">856 KB</div>
+                    </div>
+                </div>
+                <div>Markdown</div>
+                <div>
+                    <span class="doc-status status-processing">索引中</span>
+                    <div class="doc-progress">进度: 65%</div>
+                </div>
+                <div>2024-01-20 14:15</div>
+                <div class="doc-actions">
+                    <button class="btn-icon" title="预览">👁️</button>
+                    <button class="btn-icon" title="下载">⬇️</button>
+                    <button class="btn-icon" title="取消">⏹️</button>
+                    <button class="btn-icon" title="删除">🗑️</button>
+                </div>
+            </div>
+            <div class="table-row">
+                <div><input type="checkbox" class="checkbox" onchange="updateBatchActions()"></div>
+                <div class="doc-name">
+                    <span class="doc-icon">🌐</span>
+                    <div>
+                        <div>https://docs.example.com/api</div>
+                        <div class="doc-size">网页抓取</div>
+                    </div>
+                </div>
+                <div>网页</div>
+                <div><span class="doc-status status-success">已完成</span></div>
+                <div>2024-01-18 09:00</div>
+                <div class="doc-actions">
+                    <button class="btn-icon" title="预览">👁️</button>
+                    <button class="btn-icon" title="刷新">🔄</button>
+                    <button class="btn-icon" title="删除">🗑️</button>
+                </div>
+            </div>
+            <div class="table-row">
+                <div><input type="checkbox" class="checkbox" onchange="updateBatchActions()"></div>
+                <div class="doc-name">
+                    <span class="doc-icon">📄</span>
+                    <div>
+                        <div>技术规范.txt</div>
+                        <div class="doc-size">234 KB</div>
+                    </div>
+                </div>
+                <div>TXT</div>
+                <div><span class="doc-status status-error">失败</span></div>
+                <div>2024-01-17 16:45</div>
+                <div class="doc-actions">
+                    <button class="btn-icon" title="预览">👁️</button>
+                    <button class="btn-icon" title="下载">⬇️</button>
+                    <button class="btn-icon" title="重试">🔄</button>
+                    <button class="btn-icon" title="删除">🗑️</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="pagination">
+            <button class="page-btn">上一页</button>
+            <button class="page-btn active">1</button>
+            <button class="page-btn">2</button>
+            <button class="page-btn">3</button>
+            <button class="page-btn">下一页</button>
+        </div>
+        
+        <div class="tech-section">
+            <h2>📋 功能说明与技术实现</h2>
+            
+            <div class="tech-item">
+                <h3>1. 文档列表管理</h3>
+                <p><strong>功能描述：</strong>展示和管理知识库中的所有文档。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>表格组件展示文档列表</li>
+                    <li>支持排序、筛选、搜索</li>
+                    <li>分页组件处理大量文档</li>
+                    <li>实时更新文档状态（WebSocket）</li>
+                    <li>虚拟滚动优化性能</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>GET /api/v1/documents - 获取文档列表</li>
+                    <li>支持分页：page, page_size</li>
+                    <li>支持搜索：search 参数</li>
+                    <li>支持筛选：status, type, knowledge_base_id</li>
+                    <li>支持排序：sort_by, order</li>
+                    <li>使用数据库索引优化查询</li>
+                </ul>
+                <div class="code-block">
+// 后端查询示例
+GET /api/v1/documents?knowledge_base_id=123&page=1&page_size=20&status=completed&search=API
+Response: {
+  "data": [...],
+  "total": 156,
+  "page": 1,
+  "page_size": 20
+}
+                </div>
+            </div>
+            
+            <div class="tech-item">
+                <h3>2. 批量操作</h3>
+                <p><strong>功能描述：</strong>支持批量选择、删除、下载、重新索引等操作。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>全选/取消全选功能</li>
+                    <li>多选状态管理</li>
+                    <li>批量操作工具栏</li>
+                    <li>确认对话框防止误操作</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>POST /api/v1/documents/batch-delete - 批量删除</li>
+                    <li>POST /api/v1/documents/batch-reindex - 批量重新索引</li>
+                    <li>POST /api/v1/documents/batch-download - 批量下载（生成ZIP）</li>
+                    <li>使用事务保证操作原子性</li>
+                    <li>异步处理批量操作</li>
+                </ul>
+                <div class="code-block">
+// 批量删除示例
+POST /api/v1/documents/batch-delete
+Body: {
+  "document_ids": [1, 2, 3, 4, 5]
+}
+Response: {
+  "success": true,
+  "deleted_count": 5
+}
+                </div>
+            </div>
+            
+            <div class="tech-item">
+                <h3>3. 文档预览</h3>
+                <p><strong>功能描述：</strong>在线预览文档内容。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>PDF预览：使用 PDF.js</li>
+                    <li>Markdown预览：使用 Marked.js 或 React Markdown</li>
+                    <li>Word预览：转换为HTML或PDF后预览</li>
+                    <li>图片预览：直接显示</li>
+                    <li>模态框组件展示预览内容</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>GET /api/v1/documents/{id}/preview - 获取预览内容</li>
+                    <li>PDF：直接返回文件流</li>
+                    <li>Word：转换为HTML返回</li>
+                    <li>Markdown：转换为HTML返回</li>
+                    <li>缓存预览内容提升性能</li>
+                </ul>
+            </div>
+            
+            <div class="tech-item">
+                <h3>4. 文档下载</h3>
+                <p><strong>功能描述：</strong>下载原始文档文件。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>使用 Blob URL 下载文件</li>
+                    <li>显示下载进度</li>
+                    <li>支持批量下载（ZIP压缩）</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>GET /api/v1/documents/{id}/download - 下载文档</li>
+                    <li>从对象存储（S3/OSS）获取文件</li>
+                    <li>设置正确的 Content-Type 和 Content-Disposition</li>
+                    <li>支持断点续传（Range请求）</li>
+                </ul>
+            </div>
+            
+            <div class="tech-item">
+                <h3>5. 重新索引</h3>
+                <p><strong>功能描述：</strong>重新解析和索引文档。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>触发重新索引操作</li>
+                    <li>显示索引进度</li>
+                    <li>实时更新状态</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>POST /api/v1/documents/{id}/reindex - 重新索引</li>
+                    <li>删除旧的向量数据</li>
+                    <li>重新解析文档</li>
+                    <li>重新分块和向量化</li>
+                    <li>更新向量数据库</li>
+                </ul>
+                <p><strong>AI端实现：</strong></p>
+                <ul>
+                    <li>重新执行文档解析流程</li>
+                    <li>使用最新的分块策略</li>
+                    <li>使用最新的Embedding模型</li>
+                </ul>
+            </div>
+            
+            <div class="tech-item">
+                <h3>6. 文档状态管理</h3>
+                <p><strong>功能描述：</strong>跟踪文档的处理状态（待处理、索引中、已完成、失败）。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>状态标签显示</li>
+                    <li>进度条显示索引进度</li>
+                    <li>WebSocket实时更新状态</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>文档状态存储在数据库</li>
+                    <li>任务队列处理索引任务</li>
+                    <li>Redis存储任务进度</li>
+                    <li>WebSocket推送状态更新</li>
+                    <li>失败重试机制</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.table-row .checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = selectAll.checked;
+                const row = cb.closest('.table-row');
+                if (selectAll.checked) {
+                    row.classList.add('selected');
+                } else {
+                    row.classList.remove('selected');
+                }
+            });
+            updateBatchActions();
+        }
+        
+        function updateBatchActions() {
+            const checkboxes = document.querySelectorAll('.table-row .checkbox:checked');
+            const count = checkboxes.length;
+            const batchActions = document.getElementById('batchActions');
+            const selectedCount = document.getElementById('selectedCount');
+            
+            if (count > 0) {
+                batchActions.classList.add('show');
+                selectedCount.textContent = `已选择 ${count} 项`;
+            } else {
+                batchActions.classList.remove('show');
+            }
+        }
+        
+        function batchReindex() {
+            const selected = Array.from(document.querySelectorAll('.table-row .checkbox:checked'))
+                .map(cb => cb.closest('.table-row').dataset.id);
+            if (confirm(`确定要重新索引选中的 ${selected.length} 个文档吗？`)) {
+                // 调用API重新索引
+                console.log('重新索引:', selected);
+            }
+        }
+        
+        function batchDownload() {
+            const selected = Array.from(document.querySelectorAll('.table-row .checkbox:checked'))
+                .map(cb => cb.closest('.table-row').dataset.id);
+            // 调用API批量下载
+            console.log('批量下载:', selected);
+        }
+        
+        function batchDelete() {
+            const selected = Array.from(document.querySelectorAll('.table-row .checkbox:checked'))
+                .map(cb => cb.closest('.table-row').dataset.id);
+            if (confirm(`确定要删除选中的 ${selected.length} 个文档吗？此操作不可恢复！`)) {
+                // 调用API批量删除
+                console.log('批量删除:', selected);
+            }
+        }
+        
+        // 监听单个checkbox变化
+        document.querySelectorAll('.table-row .checkbox').forEach(cb => {
+            cb.addEventListener('change', function() {
+                const row = this.closest('.table-row');
+                if (this.checked) {
+                    row.classList.add('selected');
+                } else {
+                    row.classList.remove('selected');
+                }
+                updateBatchActions();
+            });
+        });
+    </script>
+</body>
+</html>
+

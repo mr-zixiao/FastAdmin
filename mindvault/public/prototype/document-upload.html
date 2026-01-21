@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>上传文档 - Dify</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            color: #1f2937;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: #fff;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .back-btn {
+            padding: 8px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        
+        .header h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 24px;
+        }
+        
+        .upload-card {
+            background: white;
+            border-radius: 8px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+        }
+        
+        .upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 48px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            background: #f9fafb;
+        }
+        
+        .upload-area:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        
+        .upload-area.dragover {
+            border-color: #3b82f6;
+            background: #dbeafe;
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        .upload-text {
+            font-size: 16px;
+            font-weight: 500;
+            color: #111827;
+            margin-bottom: 8px;
+        }
+        
+        .upload-hint {
+            font-size: 14px;
+            color: #6b7280;
+        }
+        
+        .file-input {
+            display: none;
+        }
+        
+        .file-list {
+            margin-top: 24px;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+        
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+        }
+        
+        .file-icon {
+            font-size: 24px;
+        }
+        
+        .file-details {
+            flex: 1;
+        }
+        
+        .file-name {
+            font-weight: 500;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+        
+        .file-size {
+            font-size: 13px;
+            color: #6b7280;
+        }
+        
+        .file-progress {
+            width: 200px;
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 0 16px;
+        }
+        
+        .file-progress-bar {
+            height: 100%;
+            background: #3b82f6;
+            transition: width 0.3s;
+        }
+        
+        .file-status {
+            font-size: 13px;
+            color: #6b7280;
+            min-width: 80px;
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-icon {
+            padding: 6px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            color: #6b7280;
+        }
+        
+        .btn-icon:hover {
+            background: #e5e7eb;
+            color: #111827;
+        }
+        
+        .form-section {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 24px;
+        }
+        
+        .form-section h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #111827;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        
+        .form-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+        
+        .tech-section {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-top: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .tech-section h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #111827;
+        }
+        
+        .tech-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .tech-item:last-child {
+            border-bottom: none;
+        }
+        
+        .tech-item h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+        }
+        
+        .tech-item p {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+        
+        .tech-item ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+        
+        .tech-item li {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        
+        .code-block {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #374151;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <button class="back-btn" onclick="location.href='index.html'">←</button>
+            <h1>上传文档</h1>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="upload-card">
+            <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                <div class="upload-icon">📤</div>
+                <div class="upload-text">点击或拖拽文件到此处上传</div>
+                <div class="upload-hint">支持 PDF、Word、Markdown、TXT、网页链接等格式</div>
+            </div>
+            <input type="file" id="fileInput" class="file-input" multiple accept=".pdf,.doc,.docx,.md,.txt,.html">
+            
+            <div class="file-list" id="fileList">
+                <div class="file-item">
+                    <div class="file-info">
+                        <div class="file-icon">📄</div>
+                        <div class="file-details">
+                            <div class="file-name">产品使用手册.pdf</div>
+                            <div class="file-size">2.5 MB</div>
+                        </div>
+                    </div>
+                    <div class="file-progress">
+                        <div class="file-progress-bar" style="width: 75%"></div>
+                    </div>
+                    <div class="file-status">上传中 75%</div>
+                    <div class="file-actions">
+                        <button class="btn-icon" title="取消">❌</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h2>知识库信息</h2>
+            <div class="form-group">
+                <label class="form-label">知识库名称 *</label>
+                <input type="text" class="form-input" placeholder="请输入知识库名称" value="产品文档库">
+            </div>
+            <div class="form-group">
+                <label class="form-label">描述</label>
+                <textarea class="form-textarea" placeholder="请输入知识库描述">包含所有产品相关的文档、API文档、用户手册等</textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">知识库类型</label>
+                <select class="form-select">
+                    <option>文档库</option>
+                    <option>网页库</option>
+                    <option>混合库</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h2>上传设置</h2>
+            <div class="form-group">
+                <label class="form-label">索引模式</label>
+                <select class="form-select">
+                    <option>自动索引（推荐）</option>
+                    <option>手动索引</option>
+                    <option>定时索引</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">处理模式</label>
+                <select class="form-select">
+                    <option>自动分块</option>
+                    <option>自定义分块</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <button class="btn btn-secondary" onclick="location.href='index.html'">取消</button>
+            <button class="btn btn-primary" onclick="location.href='knowledge-base-detail.html'">创建知识库</button>
+        </div>
+        
+        <div class="tech-section">
+            <h2>📋 功能说明与技术实现</h2>
+            
+            <div class="tech-item">
+                <h3>1. 文件上传功能</h3>
+                <p><strong>功能描述：</strong>支持多种文件格式上传，包括拖拽上传、批量上传。</p>
+                <p><strong>前端实现：</strong></p>
+                <ul>
+                    <li>HTML5 File API 处理文件选择</li>
+                    <li>拖拽上传（drag & drop）事件处理</li>
+                    <li>文件类型和大小验证（前端验证）</li>
+                    <li>上传进度条显示（XMLHttpRequest.upload.onprogress）</li>
+                    <li>分片上传支持大文件（使用 FormData + 分片）</li>
+                    <li>断点续传功能（记录上传进度，支持续传）</li>
+                </ul>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>POST /api/v1/documents/upload - 文件上传接口</li>
+                    <li>支持 multipart/form-data 格式</li>
+                    <li>文件大小限制检查（如 100MB）</li>
+                    <li>文件类型白名单验证</li>
+                    <li>文件存储到对象存储（S3/OSS/MinIO）</li>
+                    <li>返回文件元数据（文件名、大小、类型、存储路径）</li>
+                    <li>异步处理文件解析和索引</li>
+                </ul>
+                <div class="code-block">
+// 前端上传示例
+const formData = new FormData();
+formData.append('file', file);
+formData.append('knowledge_base_id', kbId);
+
+const xhr = new XMLHttpRequest();
+xhr.upload.onprogress = (e) => {
+  const percent = (e.loaded / e.total) * 100;
+  updateProgress(percent);
+};
+xhr.open('POST', '/api/v1/documents/upload');
+xhr.send(formData);
+                </div>
+            </div>
+            
+            <div class="tech-item">
+                <h3>2. 文档解析（AI端）</h3>
+                <p><strong>功能描述：</strong>解析上传的文档，提取文本内容。</p>
+                <p><strong>AI端实现：</strong></p>
+                <ul>
+                    <li>PDF解析：使用 PyPDF2/pdfplumber 提取文本</li>
+                    <li>Word解析：使用 python-docx 提取文本和格式</li>
+                    <li>Markdown解析：使用 markdown 库解析</li>
+                    <li>网页抓取：使用 requests + BeautifulSoup 抓取网页内容</li>
+                    <li>OCR支持：使用 Tesseract/PaddleOCR 识别图片中的文字</li>
+                    <li>表格提取：识别并提取表格数据</li>
+                    <li>图片提取：提取文档中的图片并保存</li>
+                </ul>
+                <div class="code-block">
+# Python 文档解析示例
+def parse_document(file_path, file_type):
+    if file_type == 'pdf':
+        return parse_pdf(file_path)
+    elif file_type == 'docx':
+        return parse_docx(file_path)
+    elif file_type == 'md':
+        return parse_markdown(file_path)
+    # ...
+                </div>
+            </div>
+            
+            <div class="tech-item">
+                <h3>3. 文档分块（AI端）</h3>
+                <p><strong>功能描述：</strong>将文档内容分割成适合向量化的文本块。</p>
+                <p><strong>AI端实现：</strong></p>
+                <ul>
+                    <li>使用 LangChain 的 TextSplitter 进行分块</li>
+                    <li>支持多种分块策略：
+                        <ul>
+                            <li>固定长度分块（chunk_size=512）</li>
+                            <li>语义分块（基于句子边界）</li>
+                            <li>递归分块（按段落、句子递归）</li>
+                            <li>Markdown分块（按标题层级）</li>
+                        </ul>
+                    </li>
+                    <li>分块重叠（chunk_overlap=50）保持上下文</li>
+                    <li>保留分块元数据（位置、所属文档、页码等）</li>
+                </ul>
+                <div class="code-block">
+# 文档分块示例
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+splitter = RecursiveCharacterTextSplitter(
+    chunk_size=512,
+    chunk_overlap=50,
+    separators=["\n\n", "\n", "。", " ", ""]
+)
+chunks = splitter.split_text(document_text)
+                </div>
+            </div>
+            
+            <div class="tech-item">
+                <h3>4. 向量化（AI端）</h3>
+                <p><strong>功能描述：</strong>将文本分块转换为向量嵌入。</p>
+                <p><strong>AI端实现：</strong></p>
+                <ul>
+                    <li>使用 Embedding 模型（OpenAI text-embedding-ada-002、text-embedding-3-small 等）</li>
+                    <li>批量向量化优化性能（batch processing）</li>
+                    <li>向量维度：1536（OpenAI）或 1024（其他模型）</li>
+                    <li>向量存储到向量数据库（Pinecone、Weaviate、Qdrant、Milvus）</li>
+                    <li>关联元数据（文档ID、分块ID、知识库ID）</li>
+                </ul>
+                <div class="code-block">
+# 向量化示例
+from openai import OpenAI
+client = OpenAI()
+
+def embed_text(text):
+    response = client.embeddings.create(
+        model="text-embedding-3-small",
+        input=text
+    )
+    return response.data[0].embedding
+
+# 批量向量化
+embeddings = [embed_text(chunk) for chunk in chunks]
+                </div>
+            </div>
+            
+            <div class="tech-item">
+                <h3>5. 异步任务处理</h3>
+                <p><strong>功能描述：</strong>文档解析、分块、向量化是耗时操作，需要异步处理。</p>
+                <p><strong>后端实现：</strong></p>
+                <ul>
+                    <li>使用任务队列（Celery/RQ）处理异步任务</li>
+                    <li>任务状态存储到 Redis</li>
+                    <li>WebSocket 推送任务进度到前端</li>
+                    <li>任务失败重试机制</li>
+                    <li>任务优先级队列</li>
+                </ul>
+                <div class="code-block">
+# Celery 任务示例
+@celery_app.task
+def process_document(document_id):
+    # 1. 解析文档
+    text = parse_document(document_id)
+    # 2. 分块
+    chunks = split_text(text)
+    # 3. 向量化
+    embeddings = embed_chunks(chunks)
+    # 4. 存储向量
+    store_vectors(document_id, embeddings)
+    # 5. 更新状态
+    update_document_status(document_id, 'completed')
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        
+        // 拖拽上传
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            handleFiles(files);
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+        
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                addFileToList(file);
+                // 这里可以开始上传文件
+            });
+        }
+        
+        function addFileToList(file) {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.innerHTML = `
+                <div class="file-info">
+                    <div class="file-icon">📄</div>
+                    <div class="file-details">
+                        <div class="file-name">${file.name}</div>
+                        <div class="file-size">${formatFileSize(file.size)}</div>
+                    </div>
+                </div>
+                <div class="file-progress">
+                    <div class="file-progress-bar" style="width: 0%"></div>
+                </div>
+                <div class="file-status">等待上传</div>
+                <div class="file-actions">
+                    <button class="btn-icon" onclick="this.closest('.file-item').remove()">❌</button>
+                </div>
+            `;
+            fileList.appendChild(fileItem);
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>
+
