@@ -12,7 +12,6 @@ class SysLibrariesCreateSchema(BaseModel):
     """
     name: str = Field(default=..., description='知识库名称')
     collection_name: str = Field(default=..., description='对应向量库Collection名称')
-    dept_code: str = Field(default=..., description='关联部门编码')
     status: str = Field(default="0", description='状态(0:启用 1:禁用)')
 
 
@@ -37,7 +36,6 @@ class SysLibrariesQueryParam:
         self,
         name: str | None = Query(None, description="知识库名称"),
         collection_name: str | None = Query(None, description="对应向量库Collection名称"),
-        dept_code: str | None = Query(None, description="关联部门编码"),
         status: str | None = Query(None, description="状态(0:启用 1:禁用)"),
         created_id: int | None = Query(None, description="创建人ID"),
         updated_id: int | None = Query(None, description="更新人ID"),
@@ -48,8 +46,6 @@ class SysLibrariesQueryParam:
         self.name = ("like", name)
         # 模糊查询字段
         self.collection_name = ("like", collection_name)
-        # 模糊查询字段
-        self.dept_code = ("like", dept_code)
         # 模糊查询字段
         self.status = ("like", status)
         # 精确查询字段

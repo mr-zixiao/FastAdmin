@@ -255,7 +255,7 @@
     </el-card>
 
     <!-- 创建表 -->
-    <el-dialog v-model="createTableVisible" title="创建表" append-to-body>
+    <el-dialog v-model="createTableVisible" title="创建表" append-to-body width="1200">
       <span>创建表语句(支持多个建表sql语句)：</span>
       <el-button type="warning" size="small" class="ml-1 mb-1" @click="loadExampleMysql">
         加载MySQL示例
@@ -263,7 +263,7 @@
       <el-button type="primary" size="small" class="ml-1 mb-1" @click="loadExamplePostgres">
         加载Postgres示例
       </el-button>
-      <el-scrollbar max-height="72vh">
+      <el-scrollbar height="50vh">
         <div class="absolute z-36 right-5 top-2">
           <el-link type="primary" @click="handleCopyCode">
             <el-icon>
@@ -278,7 +278,7 @@
           v-model:value="createContent"
           :options="sqlOptions"
           border
-          :height="'300px'"
+          :height="'49vh'"
           width="100%"
         />
       </el-scrollbar>

@@ -4,12 +4,12 @@ from typing import Sequence
 
 from app.core.base_crud import CRUDBase
 from app.api.v1.module_system.auth.schema import AuthSchema
-from .model import SysDeptLibrariesModel
-from .schema import SysDeptLibrariesCreateSchema, SysDeptLibrariesUpdateSchema, SysDeptLibrariesOutSchema
+from .model import SysLibPermissionsModel
+from .schema import SysLibPermissionsCreateSchema, SysLibPermissionsUpdateSchema, SysLibPermissionsOutSchema
 
 
-class SysDeptLibrariesCRUD(CRUDBase[SysDeptLibrariesModel, SysDeptLibrariesCreateSchema, SysDeptLibrariesUpdateSchema]):
-    """部门与知识库权限关联数据层"""
+class SysLibPermissionsCRUD(CRUDBase[SysLibPermissionsModel, SysLibPermissionsCreateSchema, SysLibPermissionsUpdateSchema]):
+    """知识库多维权限授权数据层"""
 
     def __init__(self, auth: AuthSchema) -> None:
         """
@@ -18,9 +18,9 @@ class SysDeptLibrariesCRUD(CRUDBase[SysDeptLibrariesModel, SysDeptLibrariesCreat
         参数:
         - auth (AuthSchema): 认证信息模型
         """
-        super().__init__(model=SysDeptLibrariesModel, auth=auth)
+        super().__init__(model=SysLibPermissionsModel, auth=auth)
 
-    async def get_by_id_sys_dept_libraries_crud(self, id: int, preload: list | None = None) -> SysDeptLibrariesModel | None:
+    async def get_by_id_sys_lib_permissions_crud(self, id: int, preload: list | None = None) -> SysLibPermissionsModel | None:
         """
         详情
         
@@ -29,11 +29,11 @@ class SysDeptLibrariesCRUD(CRUDBase[SysDeptLibrariesModel, SysDeptLibrariesCreat
         - preload (list | None): 预加载关系，未提供时使用模型默认项
         
         返回:
-        - SysDeptLibrariesModel | None: 模型实例或None
+        - SysLibPermissionsModel | None: 模型实例或None
         """
         return await self.get(id=id, preload=preload)
     
-    async def list_sys_dept_libraries_crud(self, search: dict | None = None, order_by: list[dict] | None = None, preload: list | None = None) -> Sequence[SysDeptLibrariesModel]:
+    async def list_sys_lib_permissions_crud(self, search: dict | None = None, order_by: list[dict] | None = None, preload: list | None = None) -> Sequence[SysLibPermissionsModel]:
         """
         列表查询
         
@@ -43,36 +43,36 @@ class SysDeptLibrariesCRUD(CRUDBase[SysDeptLibrariesModel, SysDeptLibrariesCreat
         - preload (list | None): 预加载关系，未提供时使用模型默认项
         
         返回:
-        - Sequence[SysDeptLibrariesModel]: 模型实例序列
+        - Sequence[SysLibPermissionsModel]: 模型实例序列
         """
         return await self.list(search=search, order_by=order_by, preload=preload)
     
-    async def create_sys_dept_libraries_crud(self, data: SysDeptLibrariesCreateSchema) -> SysDeptLibrariesModel | None:
+    async def create_sys_lib_permissions_crud(self, data: SysLibPermissionsCreateSchema) -> SysLibPermissionsModel | None:
         """
         创建
         
         参数:
-        - data (SysDeptLibrariesCreateSchema): 创建模型
+        - data (SysLibPermissionsCreateSchema): 创建模型
         
         返回:
-        - SysDeptLibrariesModel | None: 模型实例或None
+        - SysLibPermissionsModel | None: 模型实例或None
         """
         return await self.create(data=data)
     
-    async def update_sys_dept_libraries_crud(self, id: int, data: SysDeptLibrariesUpdateSchema) -> SysDeptLibrariesModel | None:
+    async def update_sys_lib_permissions_crud(self, id: int, data: SysLibPermissionsUpdateSchema) -> SysLibPermissionsModel | None:
         """
         更新
         
         参数:
         - id (int): 对象ID
-        - data (SysDeptLibrariesUpdateSchema): 更新模型
+        - data (SysLibPermissionsUpdateSchema): 更新模型
         
         返回:
-        - SysDeptLibrariesModel | None: 模型实例或None
+        - SysLibPermissionsModel | None: 模型实例或None
         """
         return await self.update(id=id, data=data)
     
-    async def delete_sys_dept_libraries_crud(self, ids: list[int]) -> None:
+    async def delete_sys_lib_permissions_crud(self, ids: list[int]) -> None:
         """
         批量删除
         
@@ -84,7 +84,7 @@ class SysDeptLibrariesCRUD(CRUDBase[SysDeptLibrariesModel, SysDeptLibrariesCreat
         """
         return await self.delete(ids=ids)
     
-    async def set_available_sys_dept_libraries_crud(self, ids: list[int], status: str) -> None:
+    async def set_available_sys_lib_permissions_crud(self, ids: list[int], status: str) -> None:
         """
         批量设置可用状态
         
@@ -97,7 +97,7 @@ class SysDeptLibrariesCRUD(CRUDBase[SysDeptLibrariesModel, SysDeptLibrariesCreat
         """
         return await self.set(ids=ids, status=status)
     
-    async def page_sys_dept_libraries_crud(self, offset: int, limit: int, order_by: list[dict] | None = None, search: dict | None = None, preload: list | None = None) -> dict:
+    async def page_sys_lib_permissions_crud(self, offset: int, limit: int, order_by: list[dict] | None = None, search: dict | None = None, preload: list | None = None) -> dict:
         """
         分页查询
         
@@ -118,6 +118,6 @@ class SysDeptLibrariesCRUD(CRUDBase[SysDeptLibrariesModel, SysDeptLibrariesCreat
             limit=limit,
             order_by=order_by_list,
             search=search_dict,
-            out_schema=SysDeptLibrariesOutSchema,
+            out_schema=SysLibPermissionsOutSchema,
             preload=preload
         )

@@ -1,4 +1,4 @@
-<!-- 部门与知识库权限关联 -->
+<!-- 知识库多维权限授权 -->
 <template>
   <div class="app-container">
     <!-- 搜索区域 -->
@@ -10,17 +10,17 @@
         :inline="true"
         @submit.prevent="handleQuery"
       >
-        <el-form-item label="部门ID" prop="dept_id">
-          <el-input v-model="queryFormData.dept_id" placeholder="请输入部门ID" clearable />
+        <el-form-item label="授权对象类型(1:部门 2:角色 3:用户)" prop="target_type">
+          <el-input v-model="queryFormData.target_type" placeholder="请输入授权对象类型(1:部门 2:角色 3:用户)" clearable />
         </el-form-item>
-        <el-form-item label="部门编码(冗余存储，便于检索匹配)" prop="dept_code">
-          <el-input v-model="queryFormData.dept_code" placeholder="请输入部门编码(冗余存储，便于检索匹配)" clearable />
+        <el-form-item label="对应对象的主键ID(sys_dept/sys_role/sys_user的ID)" prop="target_id">
+          <el-input v-model="queryFormData.target_id" placeholder="请输入对应对象的主键ID(sys_dept/sys_role/sys_user的ID)" clearable />
         </el-form-item>
-        <el-form-item label="知识库ID" prop="lib_id">
-          <el-input v-model="queryFormData.lib_id" placeholder="请输入知识库ID" clearable />
+        <el-form-item label="知识库主表ID" prop="lib_id">
+          <el-input v-model="queryFormData.lib_id" placeholder="请输入知识库主表ID" clearable />
         </el-form-item>
-        <el-form-item label="权限类型(1:只读 2:可上传/管理文档 3:完全控制)" prop="privilege_type">
-          <el-input v-model="queryFormData.privilege_type" placeholder="请输入权限类型(1:只读 2:可上传/管理文档 3:完全控制)" clearable />
+        <el-form-item label="权限级别(1:查看/提问 2:上传/编辑文档 3:管理库配置)" prop="privilege_type">
+          <el-input v-model="queryFormData.privilege_type" placeholder="请输入权限级别(1:查看/提问 2:上传/编辑文档 3:管理库配置)" clearable />
         </el-form-item>
         <el-form-item prop="status" label="状态">
           <el-select
@@ -56,7 +56,7 @@
         <!-- 查询、重置、展开/收起按钮 -->
         <el-form-item>
           <el-button
-            v-hasPerm="['module_gencode:sys_dept_libraries:query']"
+            v-hasPerm="['module_gencode:sys_lib_permissions:query']"
             type="primary"
             icon="search"
             @click="handleQuery"
@@ -64,7 +64,7 @@
             查询
           </el-button>
           <el-button
-            v-hasPerm="['module_gencode:sys_dept_libraries:query']"
+            v-hasPerm="['module_gencode:sys_lib_permissions:query']"
             icon="refresh"
             @click="handleResetQuery"
           >
@@ -93,8 +93,8 @@
       <template #header>
         <div class="card-header">
           <span>
-            部门与知识库权限关联列表
-            <el-tooltip content="部门与知识库权限关联列表">
+            知识库多维权限授权列表
+            <el-tooltip content="知识库多维权限授权列表">
               <QuestionFilled class="w-4 h-4 mx-1" />
             </el-tooltip>
           </span>
@@ -107,7 +107,7 @@
           <el-row :gutter="10">
             <el-col :span="1.5">
               <el-button
-                v-hasPerm="['module_gencode:sys_dept_libraries:create']"
+                v-hasPerm="['module_gencode:sys_lib_permissions:create']"
                 type="success"
                 icon="plus"
                 @click="handleOpenDialog('create')"
@@ -117,7 +117,7 @@
             </el-col>
             <el-col :span="1.5">
               <el-button
-                v-hasPerm="['module_gencode:sys_dept_libraries:delete']"
+                v-hasPerm="['module_gencode:sys_lib_permissions:delete']"
                 type="danger"
                 icon="delete"
                 :disabled="selectIds.length === 0"
@@ -127,7 +127,7 @@
               </el-button>
             </el-col>
             <el-col :span="1.5">
-              <el-dropdown v-hasPerm="['module_gencode:sys_dept_libraries:batch']" trigger="click">
+              <el-dropdown v-hasPerm="['module_gencode:sys_lib_permissions:batch']" trigger="click">
                 <el-button type="default" :disabled="selectIds.length === 0" icon="ArrowDown">
                   更多
                 </el-button>
@@ -150,7 +150,7 @@
             <el-col :span="1.5">
               <el-tooltip content="导入">
                 <el-button
-                  v-hasPerm="['module_gencode:sys_dept_libraries:import']"
+                  v-hasPerm="['module_gencode:sys_lib_permissions:import']"
                   type="success"
                   icon="upload"
                   circle
@@ -161,7 +161,7 @@
             <el-col :span="1.5">
               <el-tooltip content="导出">
                 <el-button
-                  v-hasPerm="['module_gencode:sys_dept_libraries:export']"
+                  v-hasPerm="['module_gencode:sys_lib_permissions:export']"
                   type="warning"
                   icon="download"
                   circle
@@ -183,7 +183,7 @@
             <el-col :span="1.5">
               <el-tooltip content="刷新">
                 <el-button
-                  v-hasPerm="['module_gencode:sys_dept_libraries:query']"
+                  v-hasPerm="['module_gencode:sys_lib_permissions:query']"
                   type="primary"
                   icon="refresh"
                   circle
@@ -238,13 +238,13 @@
             {{ (queryFormData.page_no - 1) * queryFormData.page_size + scope.$index + 1 }}
           </template>
         </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'dept_id')?.show" label="部门ID" prop="dept_id" min-width="140">
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'target_type')?.show" label="授权对象类型(1:部门 2:角色 3:用户)" prop="target_type" min-width="140">
         </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'dept_code')?.show" label="部门编码(冗余存储，便于检索匹配)" prop="dept_code" min-width="140">
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'target_id')?.show" label="对应对象的主键ID(sys_dept/sys_role/sys_user的ID)" prop="target_id" min-width="140">
         </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'lib_id')?.show" label="知识库ID" prop="lib_id" min-width="140">
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'lib_id')?.show" label="知识库主表ID" prop="lib_id" min-width="140">
         </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'privilege_type')?.show" label="权限类型(1:只读 2:可上传/管理文档 3:完全控制)" prop="privilege_type" min-width="140">
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'privilege_type')?.show" label="权限级别(1:查看/提问 2:上传/编辑文档 3:管理库配置)" prop="privilege_type" min-width="140">
         </el-table-column>
         <el-table-column v-if="tableColumns.find((col) => col.prop === 'status')?.show" label="状态(0:启用 1:禁用)" prop="status" min-width="140">
           <template #default="scope">
@@ -278,7 +278,7 @@
         >
           <template #default="scope">
             <el-button
-              v-hasPerm="['module_gencode:sys_dept_libraries:detail']"
+              v-hasPerm="['module_gencode:sys_lib_permissions:detail']"
               type="info"
               size="small"
               link
@@ -288,7 +288,7 @@
               详情
             </el-button>
             <el-button
-              v-hasPerm="['module_gencode:sys_dept_libraries:update']"
+              v-hasPerm="['module_gencode:sys_lib_permissions:update']"
               type="primary"
               size="small"
               link
@@ -298,7 +298,7 @@
               编辑
             </el-button>
             <el-button
-              v-hasPerm="['module_gencode:sys_dept_libraries:delete']"
+              v-hasPerm="['module_gencode:sys_lib_permissions:delete']"
               type="danger"
               size="small"
               link
@@ -337,16 +337,16 @@
             <el-descriptions-item label="UUID全局唯一标识" :span="2">
               {{ detailFormData.uuid }}
             </el-descriptions-item>
-            <el-descriptions-item label="部门ID" :span="2">
-              {{ detailFormData.dept_id }}
+            <el-descriptions-item label="授权对象类型(1:部门 2:角色 3:用户)" :span="2">
+              {{ detailFormData.target_type }}
             </el-descriptions-item>
-            <el-descriptions-item label="部门编码(冗余存储，便于检索匹配)" :span="2">
-              {{ detailFormData.dept_code }}
+            <el-descriptions-item label="对应对象的主键ID(sys_dept/sys_role/sys_user的ID)" :span="2">
+              {{ detailFormData.target_id }}
             </el-descriptions-item>
-            <el-descriptions-item label="知识库ID" :span="2">
+            <el-descriptions-item label="知识库主表ID" :span="2">
               {{ detailFormData.lib_id }}
             </el-descriptions-item>
-            <el-descriptions-item label="权限类型(1:只读 2:可上传/管理文档 3:完全控制)" :span="2">
+            <el-descriptions-item label="权限级别(1:查看/提问 2:上传/编辑文档 3:管理库配置)" :span="2">
               {{ detailFormData.privilege_type }}
             </el-descriptions-item>
             <el-descriptions-item label="状态" :span="2">
@@ -375,17 +375,17 @@
       <!-- 新增、编辑表单 -->
       <template v-else>
         <el-form ref="dataFormRef" :model="formData" :rules="rules" label-suffix=":" label-width="auto" label-position="right">
-          <el-form-item label="部门ID" prop="dept_id" :required="false">
-            <el-input v-model="formData.dept_id" placeholder="请输入部门ID" />
+          <el-form-item label="授权对象类型(1:部门 2:角色 3:用户)" prop="target_type" :required="false">
+            <el-input v-model="formData.target_type" placeholder="请输入授权对象类型(1:部门 2:角色 3:用户)" />
           </el-form-item>
-          <el-form-item label="部门编码(冗余存储，便于检索匹配)" prop="dept_code" :required="false">
-            <el-input v-model="formData.dept_code" placeholder="请输入部门编码(冗余存储，便于检索匹配)" />
+          <el-form-item label="对应对象的主键ID(sys_dept/sys_role/sys_user的ID)" prop="target_id" :required="false">
+            <el-input v-model="formData.target_id" placeholder="请输入对应对象的主键ID(sys_dept/sys_role/sys_user的ID)" />
           </el-form-item>
-          <el-form-item label="知识库ID" prop="lib_id" :required="false">
-            <el-input v-model="formData.lib_id" placeholder="请输入知识库ID" />
+          <el-form-item label="知识库主表ID" prop="lib_id" :required="false">
+            <el-input v-model="formData.lib_id" placeholder="请输入知识库主表ID" />
           </el-form-item>
-          <el-form-item label="权限类型(1:只读 2:可上传/管理文档 3:完全控制)" prop="privilege_type" :required="false">
-            <el-input v-model="formData.privilege_type" placeholder="请输入权限类型(1:只读 2:可上传/管理文档 3:完全控制)" />
+          <el-form-item label="权限级别(1:查看/提问 2:上传/编辑文档 3:管理库配置)" prop="privilege_type" :required="false">
+            <el-input v-model="formData.privilege_type" placeholder="请输入权限级别(1:查看/提问 2:上传/编辑文档 3:管理库配置)" />
           </el-form-item>
           <el-form-item label="状态" prop="status" :required="true">
             <el-radio-group v-model="formData.status">
@@ -438,7 +438,7 @@
 
 <script setup lang="ts">
 defineOptions({
-  name: "SysDeptLibraries",
+  name: "SysLibPermissions",
   inheritAttrs: false,
 });
 
@@ -452,7 +452,7 @@ import DatePicker from "@/components/DatePicker/index.vue";
 import type { IContentConfig } from "@/components/CURD/types";
 import ImportModal from "@/components/CURD/ImportModal.vue";
 import ExportModal from "@/components/CURD/ExportModal.vue";
-import SysDeptLibrariesAPI, { SysDeptLibrariesPageQuery, SysDeptLibrariesTable, SysDeptLibrariesForm } from '@/api/module_gencode/sys_dept_libraries'
+import SysLibPermissionsAPI, { SysLibPermissionsPageQuery, SysLibPermissionsTable, SysLibPermissionsForm } from '@/api/module_gencode/sys_lib_permissions'
 
 const visible = ref(true);
 const isExpand = ref(false);
@@ -461,7 +461,7 @@ const queryFormRef = ref();
 const dataFormRef = ref();
 const total = ref(0);
 const selectIds = ref<number[]>([]);
-const selectionRows = ref<SysDeptLibrariesTable[]>([]);
+const selectionRows = ref<SysLibPermissionsTable[]>([]);
 const loading = ref(false);
 
 // 字典仓库与需要加载的字典类型
@@ -470,16 +470,16 @@ const dictTypes: any = [
 ]
 
 // 分页表单
-const pageTableData = ref<SysDeptLibrariesTable[]>([]);
+const pageTableData = ref<SysLibPermissionsTable[]>([]);
 
 // 表格列配置
 const tableColumns = ref([
   { prop: "selection", label: "选择框", show: true },
   { prop: "index", label: "序号", show: true },
-  { prop: 'dept_id', label: '部门ID', show: true },
-  { prop: 'dept_code', label: '部门编码(冗余存储，便于检索匹配)', show: true },
-  { prop: 'lib_id', label: '知识库ID', show: true },
-  { prop: 'privilege_type', label: '权限类型(1:只读 2:可上传/管理文档 3:完全控制)', show: true },
+  { prop: 'target_type', label: '授权对象类型(1:部门 2:角色 3:用户)', show: true },
+  { prop: 'target_id', label: '对应对象的主键ID(sys_dept/sys_role/sys_user的ID)', show: true },
+  { prop: 'lib_id', label: '知识库主表ID', show: true },
+  { prop: 'privilege_type', label: '权限级别(1:查看/提问 2:上传/编辑文档 3:管理库配置)', show: true },
   { prop: 'status', label: '状态(0:启用 1:禁用)', show: true },
   { prop: 'description', label: '备注/描述', show: true },
   { prop: 'created_time', label: '创建时间', show: true },
@@ -491,10 +491,10 @@ const tableColumns = ref([
 
 // 导出列（不含选择/序号/操作）
 const exportColumns = [
-  { prop: 'dept_id', label: '部门ID' },
-  { prop: 'dept_code', label: '部门编码(冗余存储，便于检索匹配)' },
-  { prop: 'lib_id', label: '知识库ID' },
-  { prop: 'privilege_type', label: '权限类型(1:只读 2:可上传/管理文档 3:完全控制)' },
+  { prop: 'target_type', label: '授权对象类型(1:部门 2:角色 3:用户)' },
+  { prop: 'target_id', label: '对应对象的主键ID(sys_dept/sys_role/sys_user的ID)' },
+  { prop: 'lib_id', label: '知识库主表ID' },
+  { prop: 'privilege_type', label: '权限级别(1:查看/提问 2:上传/编辑文档 3:管理库配置)' },
   { prop: 'status', label: '状态(0:启用 1:禁用)' },
   { prop: 'description', label: '备注/描述' },
   { prop: 'created_time', label: '创建时间' },
@@ -505,9 +505,9 @@ const exportColumns = [
 
 // 导入/导出配置
 const curdContentConfig = {
-  permPrefix: "module_gencode:sys_dept_libraries",
+  permPrefix: "module_gencode:sys_lib_permissions",
   cols: exportColumns as any,
-  importTemplate: () => SysDeptLibrariesAPI.downloadTemplateSysDeptLibraries(),
+  importTemplate: () => SysLibPermissionsAPI.downloadTemplateSysLibPermissions(),
   exportsAction: async (params: any) => {
     const query: any = { ...params };
     query.status = '0';
@@ -515,7 +515,7 @@ const curdContentConfig = {
     query.page_size = 9999;
     const all: any[] = [];
     while (true) {
-      const res = await SysDeptLibrariesAPI.listSysDeptLibraries(query);
+      const res = await SysLibPermissionsAPI.listSysLibPermissions(query);
       const items = res.data?.data?.items || [];
       const total = res.data?.data?.total || 0;
       all.push(...items);
@@ -527,7 +527,7 @@ const curdContentConfig = {
 } as unknown as IContentConfig;
 
 // 详情表单
-const detailFormData = ref<SysDeptLibrariesTable>({});
+const detailFormData = ref<SysLibPermissionsTable>({});
 // 日期范围临时变量
 const createdDateRange = ref<[Date, Date] | []>([]);
 // 更新时间范围临时变量
@@ -554,11 +554,11 @@ function handleUpdatedDateRangeChange(range: [Date, Date]) {
 }
 
 // 分页查询参数
-const queryFormData = reactive<SysDeptLibrariesPageQuery>({
+const queryFormData = reactive<SysLibPermissionsPageQuery>({
   page_no: 1,
   page_size: 10,
-  dept_id: undefined,
-  dept_code: undefined,
+  target_type: undefined,
+  target_id: undefined,
   lib_id: undefined,
   privilege_type: undefined,
   status: undefined,
@@ -570,10 +570,10 @@ const queryFormData = reactive<SysDeptLibrariesPageQuery>({
 
 
 // 编辑表单
-const formData = reactive<SysDeptLibrariesForm>({
+const formData = reactive<SysLibPermissionsForm>({
   id: undefined,
-  dept_id: undefined,
-  dept_code: undefined,
+  target_type: undefined,
+  target_id: undefined,
   lib_id: undefined,
   privilege_type: undefined,
   status: undefined,
@@ -595,17 +595,17 @@ const rules = reactive({
   uuid: [
     { required: true, message: '请输入UUID全局唯一标识', trigger: 'blur' },
   ],
-  dept_id: [
-    { required: true, message: '请输入部门ID', trigger: 'blur' },
+  target_type: [
+    { required: true, message: '请输入授权对象类型(1:部门 2:角色 3:用户)', trigger: 'blur' },
   ],
-  dept_code: [
-    { required: false, message: '请输入部门编码(冗余存储，便于检索匹配)', trigger: 'blur' },
+  target_id: [
+    { required: true, message: '请输入对应对象的主键ID(sys_dept/sys_role/sys_user的ID)', trigger: 'blur' },
   ],
   lib_id: [
-    { required: true, message: '请输入知识库ID', trigger: 'blur' },
+    { required: true, message: '请输入知识库主表ID', trigger: 'blur' },
   ],
   privilege_type: [
-    { required: false, message: '请输入权限类型(1:只读 2:可上传/管理文档 3:完全控制)', trigger: 'blur' },
+    { required: false, message: '请输入权限级别(1:查看/提问 2:上传/编辑文档 3:管理库配置)', trigger: 'blur' },
   ],
   status: [
     { required: true, message: '请输入状态(0:启用 1:禁用)', trigger: 'blur' },
@@ -652,7 +652,7 @@ async function handleRefresh() {
 async function loadingData() {
   loading.value = true;
   try {
-    const response = await SysDeptLibrariesAPI.listSysDeptLibraries(queryFormData);
+    const response = await SysLibPermissionsAPI.listSysLibPermissions(queryFormData);
     pageTableData.value = response.data.data.items;
     total.value = response.data.data.total;
   } catch (error: any) {
@@ -686,10 +686,10 @@ async function handleResetQuery() {
 }
 
 // 定义初始表单数据常量
-const initialFormData: SysDeptLibrariesForm = {
+const initialFormData: SysLibPermissionsForm = {
   id: undefined,
-  dept_id: undefined,
-  dept_code: undefined,
+  target_type: undefined,
+  target_id: undefined,
   lib_id: undefined,
   privilege_type: undefined,
   status: undefined,
@@ -722,7 +722,7 @@ async function handleCloseDialog() {
 async function handleOpenDialog(type: "create" | "update" | "detail", id?: number) {
   dialogVisible.type = type;
   if (id) {
-    const response = await SysDeptLibrariesAPI.detailSysDeptLibraries(id);
+    const response = await SysLibPermissionsAPI.detailSysLibPermissions(id);
     if (type === "detail") {
       dialogVisible.title = "详情";
       Object.assign(detailFormData.value, response.data.data);
@@ -731,10 +731,10 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
       Object.assign(formData, response.data.data);
     }
   } else {
-    dialogVisible.title = "新增SysDeptLibraries";
+    dialogVisible.title = "新增SysLibPermissions";
     formData.id = undefined;
-    formData.dept_id = undefined;
-    formData.dept_code = undefined;
+    formData.target_type = undefined;
+    formData.target_id = undefined;
     formData.lib_id = undefined;
     formData.privilege_type = undefined;
     formData.status = undefined;
@@ -753,7 +753,7 @@ async function handleSubmit() {
       const id = formData.id;
       if (id) {
         try {
-          await SysDeptLibrariesAPI.updateSysDeptLibraries(id, { id, ...formData });
+          await SysLibPermissionsAPI.updateSysLibPermissions(id, { id, ...formData });
           dialogVisible.visible = false;
           resetForm();
           handleCloseDialog();
@@ -765,7 +765,7 @@ async function handleSubmit() {
         }
       } else {
         try {
-          await SysDeptLibrariesAPI.createSysDeptLibraries(formData);
+          await SysLibPermissionsAPI.createSysLibPermissions(formData);
           dialogVisible.visible = false;
           resetForm();
           handleCloseDialog();
@@ -790,7 +790,7 @@ async function handleDelete(ids: number[]) {
     .then(async () => {
       try {
         loading.value = true;
-        await SysDeptLibrariesAPI.deleteSysDeptLibraries(ids);
+        await SysLibPermissionsAPI.deleteSysLibPermissions(ids);
         handleResetQuery();
       } catch (error: any) {
         console.error(error);
@@ -814,7 +814,7 @@ async function handleMoreClick(status: string) {
       .then(async () => {
         try {
           loading.value = true;
-          await SysDeptLibrariesAPI.batchSysDeptLibraries({ ids: selectIds.value, status });
+          await SysLibPermissionsAPI.batchSysLibPermissions({ ids: selectIds.value, status });
           handleResetQuery();
         } catch (error: any) {
           console.error(error);
@@ -831,7 +831,7 @@ async function handleMoreClick(status: string) {
 // 处理上传
 const handleUpload = async (formData: FormData) => {
   try {
-    const response = await SysDeptLibrariesAPI.importSysDeptLibraries(formData);
+    const response = await SysLibPermissionsAPI.importSysLibPermissions(formData);
     if (response.data.code === ResultEnum.SUCCESS) {
       ElMessage.success(`${response.data.msg}，${response.data.data}`);
       importDialogVisible.value = false;

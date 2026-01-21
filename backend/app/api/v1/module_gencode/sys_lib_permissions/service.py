@@ -9,37 +9,37 @@ from app.core.exceptions import CustomException
 from app.utils.excel_util import ExcelUtil
 from app.core.logger import log
 from app.api.v1.module_system.auth.schema import AuthSchema
-from .schema import SysDeptLibrariesCreateSchema, SysDeptLibrariesUpdateSchema, SysDeptLibrariesOutSchema, SysDeptLibrariesQueryParam
-from .crud import SysDeptLibrariesCRUD
+from .schema import SysLibPermissionsCreateSchema, SysLibPermissionsUpdateSchema, SysLibPermissionsOutSchema, SysLibPermissionsQueryParam
+from .crud import SysLibPermissionsCRUD
 
 
-class SysDeptLibrariesService:
+class SysLibPermissionsService:
     """
-    部门与知识库权限关联服务层
+    知识库多维权限授权服务层
     """
     
     @classmethod
-    async def detail_sys_dept_libraries_service(cls, auth: AuthSchema, id: int) -> dict:
+    async def detail_sys_lib_permissions_service(cls, auth: AuthSchema, id: int) -> dict:
         """详情"""
-        obj = await SysDeptLibrariesCRUD(auth).get_by_id_sys_dept_libraries_crud(id=id)
+        obj = await SysLibPermissionsCRUD(auth).get_by_id_sys_lib_permissions_crud(id=id)
         if not obj:
             raise CustomException(msg="该数据不存在")
-        return SysDeptLibrariesOutSchema.model_validate(obj).model_dump()
+        return SysLibPermissionsOutSchema.model_validate(obj).model_dump()
     
     @classmethod
-    async def list_sys_dept_libraries_service(cls, auth: AuthSchema, search: SysDeptLibrariesQueryParam | None = None, order_by: list[dict] | None = None) -> list[dict]:
+    async def list_sys_lib_permissions_service(cls, auth: AuthSchema, search: SysLibPermissionsQueryParam | None = None, order_by: list[dict] | None = None) -> list[dict]:
         """列表查询"""
         search_dict = search.__dict__ if search else None
-        obj_list = await SysDeptLibrariesCRUD(auth).list_sys_dept_libraries_crud(search=search_dict, order_by=order_by)
-        return [SysDeptLibrariesOutSchema.model_validate(obj).model_dump() for obj in obj_list]
+        obj_list = await SysLibPermissionsCRUD(auth).list_sys_lib_permissions_crud(search=search_dict, order_by=order_by)
+        return [SysLibPermissionsOutSchema.model_validate(obj).model_dump() for obj in obj_list]
 
     @classmethod
-    async def page_sys_dept_libraries_service(cls, auth: AuthSchema, page_no: int, page_size: int, search: SysDeptLibrariesQueryParam | None = None, order_by: list[dict] | None = None) -> dict:
+    async def page_sys_lib_permissions_service(cls, auth: AuthSchema, page_no: int, page_size: int, search: SysLibPermissionsQueryParam | None = None, order_by: list[dict] | None = None) -> dict:
         """分页查询（数据库分页）"""
         search_dict = search.__dict__ if search else {}
         order_by_list = order_by or [{'id': 'asc'}]
         offset = (page_no - 1) * page_size
-        result = await SysDeptLibrariesCRUD(auth).page_sys_dept_libraries_crud(
+        result = await SysLibPermissionsCRUD(auth).page_sys_lib_permissions_crud(
             offset=offset,
             limit=page_size,
             order_by=order_by_list,
@@ -48,51 +48,51 @@ class SysDeptLibrariesService:
         return result
     
     @classmethod
-    async def create_sys_dept_libraries_service(cls, auth: AuthSchema, data: SysDeptLibrariesCreateSchema) -> dict:
+    async def create_sys_lib_permissions_service(cls, auth: AuthSchema, data: SysLibPermissionsCreateSchema) -> dict:
         """创建"""
         # 检查唯一性约束
-        obj = await SysDeptLibrariesCRUD(auth).create_sys_dept_libraries_crud(data=data)
-        return SysDeptLibrariesOutSchema.model_validate(obj).model_dump()
+        obj = await SysLibPermissionsCRUD(auth).create_sys_lib_permissions_crud(data=data)
+        return SysLibPermissionsOutSchema.model_validate(obj).model_dump()
     
     @classmethod
-    async def update_sys_dept_libraries_service(cls, auth: AuthSchema, id: int, data: SysDeptLibrariesUpdateSchema) -> dict:
+    async def update_sys_lib_permissions_service(cls, auth: AuthSchema, id: int, data: SysLibPermissionsUpdateSchema) -> dict:
         """更新"""
         # 检查数据是否存在
-        obj = await SysDeptLibrariesCRUD(auth).get_by_id_sys_dept_libraries_crud(id=id)
+        obj = await SysLibPermissionsCRUD(auth).get_by_id_sys_lib_permissions_crud(id=id)
         if not obj:
             raise CustomException(msg='更新失败，该数据不存在')
         
         # 检查唯一性约束
             
-        obj = await SysDeptLibrariesCRUD(auth).update_sys_dept_libraries_crud(id=id, data=data)
-        return SysDeptLibrariesOutSchema.model_validate(obj).model_dump()
+        obj = await SysLibPermissionsCRUD(auth).update_sys_lib_permissions_crud(id=id, data=data)
+        return SysLibPermissionsOutSchema.model_validate(obj).model_dump()
     
     @classmethod
-    async def delete_sys_dept_libraries_service(cls, auth: AuthSchema, ids: list[int]) -> None:
+    async def delete_sys_lib_permissions_service(cls, auth: AuthSchema, ids: list[int]) -> None:
         """删除"""
         if len(ids) < 1:
             raise CustomException(msg='删除失败，删除对象不能为空')
         for id in ids:
-            obj = await SysDeptLibrariesCRUD(auth).get_by_id_sys_dept_libraries_crud(id=id)
+            obj = await SysLibPermissionsCRUD(auth).get_by_id_sys_lib_permissions_crud(id=id)
             if not obj:
                 raise CustomException(msg=f'删除失败，ID为{id}的数据不存在')
-        await SysDeptLibrariesCRUD(auth).delete_sys_dept_libraries_crud(ids=ids)
+        await SysLibPermissionsCRUD(auth).delete_sys_lib_permissions_crud(ids=ids)
     
     @classmethod
-    async def set_available_sys_dept_libraries_service(cls, auth: AuthSchema, data: BatchSetAvailable) -> None:
+    async def set_available_sys_lib_permissions_service(cls, auth: AuthSchema, data: BatchSetAvailable) -> None:
         """批量设置状态"""
-        await SysDeptLibrariesCRUD(auth).set_available_sys_dept_libraries_crud(ids=data.ids, status=data.status)
+        await SysLibPermissionsCRUD(auth).set_available_sys_lib_permissions_crud(ids=data.ids, status=data.status)
     
     @classmethod
-    async def batch_export_sys_dept_libraries_service(cls, obj_list: list[dict]) -> bytes:
+    async def batch_export_sys_lib_permissions_service(cls, obj_list: list[dict]) -> bytes:
         """批量导出"""
         mapping_dict = {
             'id': '主键ID',
             'uuid': 'UUID全局唯一标识',
-            'dept_id': '部门ID',
-            'dept_code': '部门编码(冗余存储，便于检索匹配)',
-            'lib_id': '知识库ID',
-            'privilege_type': '权限类型(1:只读 2:可上传/管理文档 3:完全控制)',
+            'target_type': '授权对象类型(1:部门 2:角色 3:用户)',
+            'target_id': '对应对象的主键ID(sys_dept/sys_role/sys_user的ID)',
+            'lib_id': '知识库主表ID',
+            'privilege_type': '权限级别(1:查看/提问 2:上传/编辑文档 3:管理库配置)',
             'status': '状态(0:启用 1:禁用)',
             'description': '备注/描述',
             'created_time': '创建时间',
@@ -117,15 +117,15 @@ class SysDeptLibrariesService:
         return ExcelUtil.export_list2excel(list_data=data, mapping_dict=mapping_dict)
 
     @classmethod
-    async def batch_import_sys_dept_libraries_service(cls, auth: AuthSchema, file: UploadFile, update_support: bool = False) -> str:
+    async def batch_import_sys_lib_permissions_service(cls, auth: AuthSchema, file: UploadFile, update_support: bool = False) -> str:
         """批量导入"""
         header_dict = {
             '主键ID': 'id',
             'UUID全局唯一标识': 'uuid',
-            '部门ID': 'dept_id',
-            '部门编码(冗余存储，便于检索匹配)': 'dept_code',
-            '知识库ID': 'lib_id',
-            '权限类型(1:只读 2:可上传/管理文档 3:完全控制)': 'privilege_type',
+            '授权对象类型(1:部门 2:角色 3:用户)': 'target_type',
+            '对应对象的主键ID(sys_dept/sys_role/sys_user的ID)': 'target_id',
+            '知识库主表ID': 'lib_id',
+            '权限级别(1:查看/提问 2:上传/编辑文档 3:管理库配置)': 'privilege_type',
             '状态(0:启用 1:禁用)': 'status',
             '备注/描述': 'description',
             '创建时间': 'created_time',
@@ -160,8 +160,8 @@ class SysDeptLibrariesService:
                     data = {
                         "id": row['id'],
                         "uuid": row['uuid'],
-                        "dept_id": row['dept_id'],
-                        "dept_code": row['dept_code'],
+                        "target_type": row['target_type'],
+                        "target_id": row['target_id'],
                         "lib_id": row['lib_id'],
                         "privilege_type": row['privilege_type'],
                         "status": row['status'],
@@ -172,11 +172,11 @@ class SysDeptLibrariesService:
                         "updated_id": row['updated_id'],
                     }
                     # 使用CreateSchema做校验后入库
-                    create_schema = SysDeptLibrariesCreateSchema.model_validate(data)
+                    create_schema = SysLibPermissionsCreateSchema.model_validate(data)
                     
                     # 检查唯一性约束
                     
-                    await SysDeptLibrariesCRUD(auth).create_sys_dept_libraries_crud(data=create_schema)
+                    await SysLibPermissionsCRUD(auth).create_sys_lib_permissions_crud(data=create_schema)
                     success_count += 1
                 except Exception as e:
                     error_msgs.append(f"第{count}行: {str(e)}")
@@ -192,15 +192,15 @@ class SysDeptLibrariesService:
             raise CustomException(msg=f"导入失败: {str(e)}")
     
     @classmethod
-    async def import_template_download_sys_dept_libraries_service(cls) -> bytes:
+    async def import_template_download_sys_lib_permissions_service(cls) -> bytes:
         """下载导入模板"""
         header_list = [
             '主键ID',
             'UUID全局唯一标识',
-            '部门ID',
-            '部门编码(冗余存储，便于检索匹配)',
-            '知识库ID',
-            '权限类型(1:只读 2:可上传/管理文档 3:完全控制)',
+            '授权对象类型(1:部门 2:角色 3:用户)',
+            '对应对象的主键ID(sys_dept/sys_role/sys_user的ID)',
+            '知识库主表ID',
+            '权限级别(1:查看/提问 2:上传/编辑文档 3:管理库配置)',
             '状态(0:启用 1:禁用)',
             '备注/描述',
             '创建时间',

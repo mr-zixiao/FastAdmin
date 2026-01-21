@@ -14,10 +14,11 @@
           <el-input v-model="queryFormData.name" placeholder="请输入知识库名称" clearable />
         </el-form-item>
         <el-form-item label="对应向量库Collection名称" prop="collection_name">
-          <el-input v-model="queryFormData.collection_name" placeholder="请输入对应向量库Collection名称" clearable />
-        </el-form-item>
-        <el-form-item label="关联部门编码" prop="dept_code">
-          <el-input v-model="queryFormData.dept_code" placeholder="请输入关联部门编码" clearable />
+          <el-input
+            v-model="queryFormData.collection_name"
+            placeholder="请输入对应向量库Collection名称"
+            clearable
+          />
         </el-form-item>
         <el-form-item prop="status" label="状态">
           <el-select
@@ -31,10 +32,16 @@
           </el-select>
         </el-form-item>
         <el-form-item v-if="isExpand" prop="created_time" label="创建时间">
-          <DatePicker v-model="createdDateRange" @update:model-value="handleCreatedDateRangeChange" />
+          <DatePicker
+            v-model="createdDateRange"
+            @update:model-value="handleCreatedDateRangeChange"
+          />
         </el-form-item>
         <el-form-item v-if="isExpand" prop="updated_time" label="更新时间">
-          <DatePicker v-model="updatedDateRange" @update:model-value="handleUpdatedDateRangeChange" />
+          <DatePicker
+            v-model="updatedDateRange"
+            @update:model-value="handleUpdatedDateRangeChange"
+          />
         </el-form-item>
         <el-form-item v-if="isExpand" prop="created_id" label="创建人">
           <UserTableSelect
@@ -235,29 +242,58 @@
             {{ (queryFormData.page_no - 1) * queryFormData.page_size + scope.$index + 1 }}
           </template>
         </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'name')?.show" label="知识库名称" prop="name" min-width="140">
-        </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'collection_name')?.show" label="对应向量库Collection名称" prop="collection_name" min-width="140">
-        </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'dept_code')?.show" label="关联部门编码" prop="dept_code" min-width="140">
-        </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'status')?.show" label="状态(0:启用 1:禁用)" prop="status" min-width="140">
+        <el-table-column
+          v-if="tableColumns.find((col) => col.prop === 'name')?.show"
+          label="知识库名称"
+          prop="name"
+          min-width="140"
+        ></el-table-column>
+        <el-table-column
+          v-if="tableColumns.find((col) => col.prop === 'collection_name')?.show"
+          label="对应向量库Collection名称"
+          prop="collection_name"
+          min-width="140"
+        ></el-table-column>
+        <el-table-column
+          v-if="tableColumns.find((col) => col.prop === 'status')?.show"
+          label="状态(0:启用 1:禁用)"
+          prop="status"
+          min-width="140"
+        >
           <template #default="scope">
             <el-tag :type="scope.row.status == '0' ? 'success' : 'info'">
-              {{ scope.row.status == '0' ? '启用' : '停用' }}
+              {{ scope.row.status == "0" ? "启用" : "停用" }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'created_time')?.show" label="创建时间" prop="created_time" min-width="140">
-        </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'updated_time')?.show" label="更新时间" prop="updated_time" min-width="140">
-        </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'created_id')?.show" label="创建人ID" prop="created_id" min-width="140">
+        <el-table-column
+          v-if="tableColumns.find((col) => col.prop === 'created_time')?.show"
+          label="创建时间"
+          prop="created_time"
+          min-width="140"
+        ></el-table-column>
+        <el-table-column
+          v-if="tableColumns.find((col) => col.prop === 'updated_time')?.show"
+          label="更新时间"
+          prop="updated_time"
+          min-width="140"
+        ></el-table-column>
+        <el-table-column
+          v-if="tableColumns.find((col) => col.prop === 'created_id')?.show"
+          label="创建人ID"
+          prop="created_id"
+          min-width="140"
+        >
           <template #default="scope">
             <el-tag>{{ scope.row.created_by?.name }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'updated_id')?.show" label="更新人ID" prop="updated_id" min-width="140">
+        <el-table-column
+          v-if="tableColumns.find((col) => col.prop === 'updated_id')?.show"
+          label="更新人ID"
+          prop="updated_id"
+          min-width="140"
+        >
           <template #default="scope">
             <el-tag>{{ scope.row.updated_by?.name }}</el-tag>
           </template>
@@ -324,52 +360,56 @@
       <!-- 详情 -->
       <template v-if="dialogVisible.type === 'detail'">
         <el-descriptions :column="4" border>
-            <el-descriptions-item label="主键ID" :span="2">
-              {{ detailFormData.id }}
-            </el-descriptions-item>
-            <el-descriptions-item label="UUID全局唯一标识" :span="2">
-              {{ detailFormData.uuid }}
-            </el-descriptions-item>
-            <el-descriptions-item label="知识库名称" :span="2">
-              {{ detailFormData.name }}
-            </el-descriptions-item>
-            <el-descriptions-item label="对应向量库Collection名称" :span="2">
-              {{ detailFormData.collection_name }}
-            </el-descriptions-item>
-            <el-descriptions-item label="关联部门编码" :span="2">
-              {{ detailFormData.dept_code }}
-            </el-descriptions-item>
-            <el-descriptions-item label="状态" :span="2">
-              <el-tag :type="detailFormData.status == '0' ? 'success' : 'danger'">
-                {{ detailFormData.status == '0' ? "启用" : "停用" }}
-              </el-tag>
-            </el-descriptions-item>
-            <el-descriptions-item label="创建时间" :span="2">
-              {{ detailFormData.created_time }}
-            </el-descriptions-item>
-            <el-descriptions-item label="更新时间" :span="2">
-              {{ detailFormData.updated_time }}
-            </el-descriptions-item>
-            <el-descriptions-item label="创建人" :span="2">
-              {{ detailFormData.created_by?.name }}
-            </el-descriptions-item>
-            <el-descriptions-item label="更新人" :span="2">
-              {{ detailFormData.updated_by?.name }}
-            </el-descriptions-item>
+          <el-descriptions-item label="主键ID" :span="2">
+            {{ detailFormData.id }}
+          </el-descriptions-item>
+          <el-descriptions-item label="UUID全局唯一标识" :span="2">
+            {{ detailFormData.uuid }}
+          </el-descriptions-item>
+          <el-descriptions-item label="知识库名称" :span="2">
+            {{ detailFormData.name }}
+          </el-descriptions-item>
+          <el-descriptions-item label="对应向量库Collection名称" :span="2">
+            {{ detailFormData.collection_name }}
+          </el-descriptions-item>
+          <el-descriptions-item label="状态" :span="2">
+            <el-tag :type="detailFormData.status == '0' ? 'success' : 'danger'">
+              {{ detailFormData.status == "0" ? "启用" : "停用" }}
+            </el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="创建时间" :span="2">
+            {{ detailFormData.created_time }}
+          </el-descriptions-item>
+          <el-descriptions-item label="更新时间" :span="2">
+            {{ detailFormData.updated_time }}
+          </el-descriptions-item>
+          <el-descriptions-item label="创建人" :span="2">
+            {{ detailFormData.created_by?.name }}
+          </el-descriptions-item>
+          <el-descriptions-item label="更新人" :span="2">
+            {{ detailFormData.updated_by?.name }}
+          </el-descriptions-item>
         </el-descriptions>
       </template>
 
       <!-- 新增、编辑表单 -->
       <template v-else>
-        <el-form ref="dataFormRef" :model="formData" :rules="rules" label-suffix=":" label-width="auto" label-position="right">
+        <el-form
+          ref="dataFormRef"
+          :model="formData"
+          :rules="rules"
+          label-suffix=":"
+          label-width="auto"
+          label-position="right"
+        >
           <el-form-item label="知识库名称" prop="name" :required="false">
             <el-input v-model="formData.name" placeholder="请输入知识库名称" />
           </el-form-item>
           <el-form-item label="对应向量库Collection名称" prop="collection_name" :required="false">
-            <el-input v-model="formData.collection_name" placeholder="请输入对应向量库Collection名称" />
-          </el-form-item>
-          <el-form-item label="关联部门编码" prop="dept_code" :required="false">
-            <el-input v-model="formData.dept_code" placeholder="请输入关联部门编码" />
+            <el-input
+              v-model="formData.collection_name"
+              placeholder="请输入对应向量库Collection名称"
+            />
           </el-form-item>
           <el-form-item label="状态" prop="status" :required="true">
             <el-radio-group v-model="formData.status">
@@ -416,17 +456,21 @@ defineOptions({
   inheritAttrs: false,
 });
 
-import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { QuestionFilled, ArrowUp, ArrowDown, Check, CircleClose } from '@element-plus/icons-vue'
+import { ref, reactive, onMounted } from "vue";
+import { ElMessage, ElMessageBox } from "element-plus";
+import { QuestionFilled, ArrowUp, ArrowDown, Check, CircleClose } from "@element-plus/icons-vue";
 import { formatToDateTime } from "@/utils/dateUtil";
 import { useDictStore } from "@/store";
-import { ResultEnum } from '@/enums/api/result.enum'
+import { ResultEnum } from "@/enums/api/result.enum";
 import DatePicker from "@/components/DatePicker/index.vue";
 import type { IContentConfig } from "@/components/CURD/types";
 import ImportModal from "@/components/CURD/ImportModal.vue";
 import ExportModal from "@/components/CURD/ExportModal.vue";
-import SysLibrariesAPI, { SysLibrariesPageQuery, SysLibrariesTable, SysLibrariesForm } from '@/api/module_gencode/sys_libraries'
+import SysLibrariesAPI, {
+  SysLibrariesPageQuery,
+  SysLibrariesTable,
+  SysLibrariesForm,
+} from "@/api/module_gencode/sys_libraries";
 
 const visible = ref(true);
 const isExpand = ref(false);
@@ -439,9 +483,8 @@ const selectionRows = ref<SysLibrariesTable[]>([]);
 const loading = ref(false);
 
 // 字典仓库与需要加载的字典类型
-const dictStore = useDictStore()
-const dictTypes: any = [
-]
+const dictStore = useDictStore();
+const dictTypes: any = [];
 
 // 分页表单
 const pageTableData = ref<SysLibrariesTable[]>([]);
@@ -450,28 +493,26 @@ const pageTableData = ref<SysLibrariesTable[]>([]);
 const tableColumns = ref([
   { prop: "selection", label: "选择框", show: true },
   { prop: "index", label: "序号", show: true },
-  { prop: 'name', label: '知识库名称', show: true },
-  { prop: 'collection_name', label: '对应向量库Collection名称', show: true },
-  { prop: 'dept_code', label: '关联部门编码', show: true },
-  { prop: 'status', label: '状态(0:启用 1:禁用)', show: true },
-  { prop: 'created_time', label: '创建时间', show: true },
-  { prop: 'updated_time', label: '更新时间', show: true },
-  { prop: 'created_id', label: '创建人ID', show: true },
-  { prop: 'updated_id', label: '更新人ID', show: true },
-  { prop: 'operation', label: '操作', show: true }
+  { prop: "name", label: "知识库名称", show: true },
+  { prop: "collection_name", label: "对应向量库Collection名称", show: true },
+  { prop: "status", label: "状态(0:启用 1:禁用)", show: true },
+  { prop: "created_time", label: "创建时间", show: true },
+  { prop: "updated_time", label: "更新时间", show: true },
+  { prop: "created_id", label: "创建人ID", show: true },
+  { prop: "updated_id", label: "更新人ID", show: true },
+  { prop: "operation", label: "操作", show: true },
 ]);
 
 // 导出列（不含选择/序号/操作）
 const exportColumns = [
-  { prop: 'name', label: '知识库名称' },
-  { prop: 'collection_name', label: '对应向量库Collection名称' },
-  { prop: 'dept_code', label: '关联部门编码' },
-  { prop: 'status', label: '状态(0:启用 1:禁用)' },
-  { prop: 'created_time', label: '创建时间' },
-  { prop: 'updated_time', label: '更新时间' },
-  { prop: 'created_id', label: '创建人ID' },
-  { prop: 'updated_id', label: '更新人ID' },
-]
+  { prop: "name", label: "知识库名称" },
+  { prop: "collection_name", label: "对应向量库Collection名称" },
+  { prop: "status", label: "状态(0:启用 1:禁用)" },
+  { prop: "created_time", label: "创建时间" },
+  { prop: "updated_time", label: "更新时间" },
+  { prop: "created_id", label: "创建人ID" },
+  { prop: "updated_id", label: "更新人ID" },
+];
 
 // 导入/导出配置
 const curdContentConfig = {
@@ -480,7 +521,7 @@ const curdContentConfig = {
   importTemplate: () => SysLibrariesAPI.downloadTemplateSysLibraries(),
   exportsAction: async (params: any) => {
     const query: any = { ...params };
-    query.status = '0';
+    query.status = "0";
     query.page_no = 1;
     query.page_size = 9999;
     const all: any[] = [];
@@ -529,7 +570,6 @@ const queryFormData = reactive<SysLibrariesPageQuery>({
   page_size: 10,
   name: undefined,
   collection_name: undefined,
-  dept_code: undefined,
   status: undefined,
   created_time: undefined,
   updated_time: undefined,
@@ -537,13 +577,11 @@ const queryFormData = reactive<SysLibrariesPageQuery>({
   updated_id: undefined,
 });
 
-
 // 编辑表单
 const formData = reactive<SysLibrariesForm>({
   id: undefined,
   name: undefined,
   collection_name: undefined,
-  dept_code: undefined,
   status: undefined,
 });
 
@@ -556,36 +594,15 @@ const dialogVisible = reactive({
 
 // 表单验证规则
 const rules = reactive({
-  id: [
-    { required: false, message: '请输入主键ID', trigger: 'blur' },
-  ],
-  uuid: [
-    { required: true, message: '请输入UUID全局唯一标识', trigger: 'blur' },
-  ],
-  name: [
-    { required: true, message: '请输入知识库名称', trigger: 'blur' },
-  ],
-  collection_name: [
-    { required: true, message: '请输入对应向量库Collection名称', trigger: 'blur' },
-  ],
-  dept_code: [
-    { required: false, message: '请输入关联部门编码', trigger: 'blur' },
-  ],
-  status: [
-    { required: true, message: '请输入状态(0:启用 1:禁用)', trigger: 'blur' },
-  ],
-  created_time: [
-    { required: true, message: '请输入创建时间', trigger: 'blur' },
-  ],
-  updated_time: [
-    { required: true, message: '请输入更新时间', trigger: 'blur' },
-  ],
-  created_id: [
-    { required: false, message: '请输入创建人ID', trigger: 'blur' },
-  ],
-  updated_id: [
-    { required: false, message: '请输入更新人ID', trigger: 'blur' },
-  ],
+  id: [{ required: false, message: "请输入主键ID", trigger: "blur" }],
+  uuid: [{ required: true, message: "请输入UUID全局唯一标识", trigger: "blur" }],
+  name: [{ required: true, message: "请输入知识库名称", trigger: "blur" }],
+  collection_name: [{ required: true, message: "请输入对应向量库Collection名称", trigger: "blur" }],
+  status: [{ required: true, message: "请输入状态(0:启用 1:禁用)", trigger: "blur" }],
+  created_time: [{ required: true, message: "请输入创建时间", trigger: "blur" }],
+  updated_time: [{ required: true, message: "请输入更新时间", trigger: "blur" }],
+  created_id: [{ required: false, message: "请输入创建人ID", trigger: "blur" }],
+  updated_id: [{ required: false, message: "请输入更新人ID", trigger: "blur" }],
 });
 
 // 导入弹窗显示状态
@@ -651,7 +668,6 @@ const initialFormData: SysLibrariesForm = {
   id: undefined,
   name: undefined,
   collection_name: undefined,
-  dept_code: undefined,
   status: undefined,
 };
 
@@ -694,7 +710,6 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
     formData.id = undefined;
     formData.name = undefined;
     formData.collection_name = undefined;
-    formData.dept_code = undefined;
     formData.status = undefined;
   }
   dialogVisible.visible = true;
@@ -802,11 +817,10 @@ const handleUpload = async (formData: FormData) => {
 onMounted(async () => {
   // 预加载字典数据
   if (dictTypes.length > 0) {
-    await dictStore.getDict(dictTypes)
+    await dictStore.getDict(dictTypes);
   }
   loadingData();
 });
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>

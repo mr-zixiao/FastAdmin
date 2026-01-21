@@ -16,5 +16,4 @@ class SysLibrariesModel(ModelMixin, UserMixin):
 
     name: Mapped[str | None] = mapped_column(String(100), nullable=True, comment='知识库名称')
     collection_name: Mapped[str | None] = mapped_column(String(128), nullable=True, comment='对应向量库Collection名称')
-    dept_code: Mapped[str | None] = mapped_column(String(64), nullable=True, comment='关联部门编码')
 
