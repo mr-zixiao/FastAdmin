@@ -13,10 +13,10 @@
         <el-form-item label="知识库名称" prop="name">
           <el-input v-model="queryFormData.name" placeholder="请输入知识库名称" clearable />
         </el-form-item>
-        <el-form-item label="对应向量库Collection名称" prop="collection_name">
+        <el-form-item label="向量库名称" prop="collection_name">
           <el-input
             v-model="queryFormData.collection_name"
-            placeholder="请输入对应向量库Collection名称"
+            placeholder="请输入向量库名称"
             clearable
           />
         </el-form-item>
@@ -211,7 +211,7 @@
         </div>
       </div>
 
-      <!-- 表格区域：系统配置列表 -->
+      <!-- 表格区域：知识库列表 -->
       <el-table
         ref="tableRef"
         v-loading="loading"
@@ -250,13 +250,13 @@
         ></el-table-column>
         <el-table-column
           v-if="tableColumns.find((col) => col.prop === 'collection_name')?.show"
-          label="对应向量库Collection名称"
+          label="向量库名称"
           prop="collection_name"
           min-width="140"
         ></el-table-column>
         <el-table-column
           v-if="tableColumns.find((col) => col.prop === 'status')?.show"
-          label="状态(0:启用 1:禁用)"
+          label="状态"
           prop="status"
           min-width="140"
         >
@@ -280,7 +280,7 @@
         ></el-table-column>
         <el-table-column
           v-if="tableColumns.find((col) => col.prop === 'created_id')?.show"
-          label="创建人ID"
+          label="创建人"
           prop="created_id"
           min-width="140"
         >
@@ -290,7 +290,7 @@
         </el-table-column>
         <el-table-column
           v-if="tableColumns.find((col) => col.prop === 'updated_id')?.show"
-          label="更新人ID"
+          label="更新人"
           prop="updated_id"
           min-width="140"
         >
@@ -360,16 +360,16 @@
       <!-- 详情 -->
       <template v-if="dialogVisible.type === 'detail'">
         <el-descriptions :column="4" border>
-          <el-descriptions-item label="主键ID" :span="2">
+          <el-descriptions-item label="ID" :span="2">
             {{ detailFormData.id }}
           </el-descriptions-item>
-          <el-descriptions-item label="UUID全局唯一标识" :span="2">
+          <el-descriptions-item label="UUID" :span="2">
             {{ detailFormData.uuid }}
           </el-descriptions-item>
           <el-descriptions-item label="知识库名称" :span="2">
             {{ detailFormData.name }}
           </el-descriptions-item>
-          <el-descriptions-item label="对应向量库Collection名称" :span="2">
+          <el-descriptions-item label="向量库名称" :span="2">
             {{ detailFormData.collection_name }}
           </el-descriptions-item>
           <el-descriptions-item label="状态" :span="2">
@@ -405,10 +405,10 @@
           <el-form-item label="知识库名称" prop="name" :required="false">
             <el-input v-model="formData.name" placeholder="请输入知识库名称" />
           </el-form-item>
-          <el-form-item label="对应向量库Collection名称" prop="collection_name" :required="false">
+          <el-form-item label="向量库名称" prop="collection_name" :required="false">
             <el-input
               v-model="formData.collection_name"
-              placeholder="请输入对应向量库Collection名称"
+              placeholder="请输入向量库名称"
             />
           </el-form-item>
           <el-form-item label="状态" prop="status" :required="true">
@@ -494,24 +494,24 @@ const tableColumns = ref([
   { prop: "selection", label: "选择框", show: true },
   { prop: "index", label: "序号", show: true },
   { prop: "name", label: "知识库名称", show: true },
-  { prop: "collection_name", label: "对应向量库Collection名称", show: true },
-  { prop: "status", label: "状态(0:启用 1:禁用)", show: true },
+  { prop: "collection_name", label: "向量库名称", show: true },
+  { prop: "status", label: "状态", show: true },
   { prop: "created_time", label: "创建时间", show: true },
   { prop: "updated_time", label: "更新时间", show: true },
-  { prop: "created_id", label: "创建人ID", show: true },
-  { prop: "updated_id", label: "更新人ID", show: true },
+  { prop: "created_id", label: "创建人", show: true },
+  { prop: "updated_id", label: "更新人", show: true },
   { prop: "operation", label: "操作", show: true },
 ]);
 
 // 导出列（不含选择/序号/操作）
 const exportColumns = [
   { prop: "name", label: "知识库名称" },
-  { prop: "collection_name", label: "对应向量库Collection名称" },
-  { prop: "status", label: "状态(0:启用 1:禁用)" },
+  { prop: "collection_name", label: "向量库名称" },
+  { prop: "status", label: "状态" },
   { prop: "created_time", label: "创建时间" },
   { prop: "updated_time", label: "更新时间" },
-  { prop: "created_id", label: "创建人ID" },
-  { prop: "updated_id", label: "更新人ID" },
+  { prop: "created_id", label: "创建人" },
+  { prop: "updated_id", label: "更新人" },
 ];
 
 // 导入/导出配置
@@ -594,15 +594,15 @@ const dialogVisible = reactive({
 
 // 表单验证规则
 const rules = reactive({
-  id: [{ required: false, message: "请输入主键ID", trigger: "blur" }],
-  uuid: [{ required: true, message: "请输入UUID全局唯一标识", trigger: "blur" }],
+  id: [{ required: false, message: "请输入ID", trigger: "blur" }],
+  uuid: [{ required: false, message: "UUID", trigger: "blur" }],
   name: [{ required: true, message: "请输入知识库名称", trigger: "blur" }],
-  collection_name: [{ required: true, message: "请输入对应向量库Collection名称", trigger: "blur" }],
-  status: [{ required: true, message: "请输入状态(0:启用 1:禁用)", trigger: "blur" }],
-  created_time: [{ required: true, message: "请输入创建时间", trigger: "blur" }],
-  updated_time: [{ required: true, message: "请输入更新时间", trigger: "blur" }],
-  created_id: [{ required: false, message: "请输入创建人ID", trigger: "blur" }],
-  updated_id: [{ required: false, message: "请输入更新人ID", trigger: "blur" }],
+  collection_name: [{ required: true, message: "请输入向量库名称", trigger: "blur" }],
+  status: [{ required: true, message: "请选择状态", trigger: "change" }],
+  created_time: [{ required: false, message: "创建时间", trigger: "blur" }],
+  updated_time: [{ required: false, message: "更新时间", trigger: "blur" }],
+  created_id: [{ required: false, message: "创建人", trigger: "blur" }],
+  updated_id: [{ required: false, message: "更新人", trigger: "blur" }],
 });
 
 // 导入弹窗显示状态
@@ -706,7 +706,7 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
       Object.assign(formData, response.data.data);
     }
   } else {
-    dialogVisible.title = "新增SysLibraries";
+      dialogVisible.title = "新增知识库";
     formData.id = undefined;
     formData.name = undefined;
     formData.collection_name = undefined;
