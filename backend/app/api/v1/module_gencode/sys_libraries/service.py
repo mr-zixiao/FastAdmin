@@ -9,8 +9,10 @@ from app.core.exceptions import CustomException
 from app.utils.excel_util import ExcelUtil
 from app.core.logger import log
 from app.api.v1.module_system.auth.schema import AuthSchema
-from .schema import SysLibrariesCreateSchema, SysLibrariesUpdateSchema, SysLibrariesOutSchema, SysLibrariesQueryParam
+from .schema import SysLibrariesCreateSchema, SysLibrariesWithPermissionCreateSchema, SysLibrariesWithPermissionUpdateSchema, SysLibrariesUpdateSchema, SysLibrariesOutSchema, SysLibrariesQueryParam
 from .crud import SysLibrariesCRUD
+from app.api.v1.module_gencode.sys_lib_permissions.service import SysLibPermissionsService
+from app.api.v1.module_gencode.sys_lib_permissions.schema import SysLibPermissionsCreateSchema
 
 
 class SysLibrariesService:
@@ -48,14 +50,58 @@ class SysLibrariesService:
         return result
     
     @classmethod
-    async def create_sys_libraries_service(cls, auth: AuthSchema, data: SysLibrariesCreateSchema) -> dict:
+    async def create_sys_libraries_service(cls, auth: AuthSchema, data: SysLibrariesWithPermissionCreateSchema) -> dict:
         """创建"""
+        # 提取权限关联字段
+        target_type = data.target_type
+        target_ids = data.target_ids
+        privilege_type = data.privilege_type
+        
+        # 准备基础创建数据（排除权限关联字段）
+        base_data_dict = data.model_dump()
+        for field in ['target_type', 'target_ids', 'privilege_type']:
+            base_data_dict.pop(field, None)
+        
+        base_data = SysLibrariesCreateSchema(**base_data_dict)
+        
         # 检查唯一性约束
-        obj = await SysLibrariesCRUD(auth).create_sys_libraries_crud(data=data)
+        obj = await SysLibrariesCRUD(auth).create_sys_libraries_crud(data=base_data)
+        
+        # 如果提供了权限关联字段，则创建对应的权限记录
+        if target_type and target_ids and privilege_type:
+            await cls._handle_library_permissions(auth, obj.id, target_type, target_ids, privilege_type)
+        
         return SysLibrariesOutSchema.model_validate(obj).model_dump()
     
     @classmethod
-    async def update_sys_libraries_service(cls, auth: AuthSchema, id: int, data: SysLibrariesUpdateSchema) -> dict:
+    async def _handle_library_permissions(cls, auth: AuthSchema, lib_id: int, target_type: str, target_ids: str, privilege_type: str):
+        """
+        处理知识库权限关联
+        
+        参数:
+        - auth: 认证信息
+        - lib_id: 知识库ID
+        - target_type: 授权对象类型(dept:部门 role:角色 user:用户)
+        - target_ids: 对应对象的主键ID序列(逗号分隔)
+        - privilege_type: 权限级别
+        """
+        # 解析目标ID列表
+        target_id_list = [int(id.strip()) for id in target_ids.split(',') if id.strip().isdigit()]
+        
+        # 直接使用传入的target_type值
+        # 为每个目标ID创建权限记录
+        for target_id in target_id_list:
+            permission_data = SysLibPermissionsCreateSchema(
+                target_type=target_type,
+                target_id=target_id,
+                lib_id=lib_id,
+                privilege_type=privilege_type,
+                status="0"  # 默认启用状态
+            )
+            await SysLibPermissionsService.create_sys_lib_permissions_service(auth, permission_data)
+    
+    @classmethod
+    async def update_sys_libraries_service(cls, auth: AuthSchema, id: int, data: SysLibrariesWithPermissionUpdateSchema) -> dict:
         """更新"""
         # 检查数据是否存在
         obj = await SysLibrariesCRUD(auth).get_by_id_sys_libraries_crud(id=id)
@@ -64,8 +110,67 @@ class SysLibrariesService:
         
         # 检查唯一性约束
             
-        obj = await SysLibrariesCRUD(auth).update_sys_libraries_crud(id=id, data=data)
+        # 提取权限关联字段
+        target_type = getattr(data, 'target_type', None)
+        target_ids = getattr(data, 'target_ids', None)
+        privilege_type = getattr(data, 'privilege_type', None)
+        
+        # 准备基础更新数据（排除权限关联字段）
+        base_data_dict = data.model_dump()
+        for field in ['target_type', 'target_ids', 'privilege_type']:
+            base_data_dict.pop(field, None)
+        
+        base_data = SysLibrariesUpdateSchema(**base_data_dict)
+        
+        obj = await SysLibrariesCRUD(auth).update_sys_libraries_crud(id=id, data=base_data)
+        
+        # 如果提供了权限关联字段，则处理对应的权限记录
+        if target_type and target_ids and privilege_type:
+            await cls._handle_library_permissions_on_update(auth, obj.id, target_type, target_ids, privilege_type)
+        
         return SysLibrariesOutSchema.model_validate(obj).model_dump()
+    
+    @classmethod
+    async def _handle_library_permissions_on_update(cls, auth: AuthSchema, lib_id: int, target_type: str, target_ids: str, privilege_type: str):
+        """
+        更新知识库权限关联（先删除旧权限，再创建新权限）
+        
+        参数:
+        - auth: 认证信息
+        - lib_id: 知识库ID
+        - target_type: 授权对象类型(dept:部门 role:角色 user:用户)
+        - target_ids: 对应对象的主键ID序列(逗号分隔)
+        - privilege_type: 权限级别
+        """
+        from app.api.v1.module_gencode.sys_lib_permissions.crud import SysLibPermissionsCRUD
+        from app.api.v1.module_gencode.sys_lib_permissions.schema import SysLibPermissionsQueryParam
+        
+        # 先删除该知识库的所有现有权限记录
+        search_param = SysLibPermissionsQueryParam(lib_id=lib_id)
+        existing_permissions = await SysLibPermissionsCRUD(auth).list_sys_lib_permissions_crud(search=search_param.__dict__)
+        
+        # 收集需要删除的权限ID
+        permission_ids_to_delete = [perm.id for perm in existing_permissions]
+        
+        # 删除现有权限
+        if permission_ids_to_delete:
+            await SysLibPermissionsCRUD(auth).delete_sys_lib_permissions_crud(ids=permission_ids_to_delete)
+        
+        # 解析目标ID列表
+        target_id_list = [int(id.strip()) for id in target_ids.split(',') if id.strip().isdigit()]
+        
+        # 直接使用传入的target_type值
+        
+        # 为每个目标ID创建新的权限记录
+        for target_id in target_id_list:
+            permission_data = SysLibPermissionsCreateSchema(
+                target_type=target_type,
+                target_id=target_id,
+                lib_id=lib_id,
+                privilege_type=privilege_type,
+                status="0"  # 默认启用状态
+            )
+            await SysLibPermissionsService.create_sys_lib_permissions_service(auth, permission_data)
     
     @classmethod
     async def delete_sys_libraries_service(cls, auth: AuthSchema, ids: list[int]) -> None:

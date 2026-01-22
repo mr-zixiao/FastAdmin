@@ -57,7 +57,12 @@ class SysLibrariesCRUD(CRUDBase[SysLibrariesModel, SysLibrariesCreateSchema, Sys
         返回:
         - SysLibrariesModel | None: 模型实例或None
         """
-        return await self.create(data=data)
+        # 过滤掉不需要保存到数据库的字段
+        filtered_data = {
+            k: v for k, v in data.model_dump().items() 
+            if k not in ['target_type', 'target_ids', 'privilege_type']
+        }
+        return await self.create(data=filtered_data)
     
     async def update_sys_libraries_crud(self, id: int, data: SysLibrariesUpdateSchema) -> SysLibrariesModel | None:
         """
@@ -70,7 +75,12 @@ class SysLibrariesCRUD(CRUDBase[SysLibrariesModel, SysLibrariesCreateSchema, Sys
         返回:
         - SysLibrariesModel | None: 模型实例或None
         """
-        return await self.update(id=id, data=data)
+        # 过滤掉不需要保存到数据库的字段
+        filtered_data = {
+            k: v for k, v in data.model_dump().items() 
+            if k not in ['target_type', 'target_ids', 'privilege_type']
+        }
+        return await self.update(id=id, data=filtered_data)
     
     async def delete_sys_libraries_crud(self, ids: list[int]) -> None:
         """
