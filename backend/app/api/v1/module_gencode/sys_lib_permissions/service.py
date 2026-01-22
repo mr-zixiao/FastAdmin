@@ -9,7 +9,7 @@ from app.core.exceptions import CustomException
 from app.utils.excel_util import ExcelUtil
 from app.core.logger import log
 from app.api.v1.module_system.auth.schema import AuthSchema
-from .schema import SysLibPermissionsCreateSchema, SysLibPermissionsUpdateSchema, SysLibPermissionsOutSchema, SysLibPermissionsQueryParam
+from .schema import SysLibPermissionsCreateSchema, SysLibPermissionsUpdateSchema, SysLibPermissionsOutSchema, SysLibPermissionsQueryParam, SysLibPermissionsBatchAssociateSchema
 from .crud import SysLibPermissionsCRUD
 
 
@@ -218,3 +218,65 @@ class SysLibPermissionsService:
             selector_header_list=selector_header_list,
             option_list=option_list
         )
+    
+    @classmethod
+    async def batch_associate_sys_lib_permissions_service(cls, auth: AuthSchema, data: SysLibPermissionsBatchAssociateSchema) -> dict:
+        """
+        批量关联知识库权限
+        
+        参数:
+        - auth: 认证信息
+        - data: 批量关联数据，包含target_ids字符串（逗号分隔的ID）
+        
+        返回:
+        - dict: 包含成功创建的数量和详情列表
+        """
+        # 解析target_ids字符串，拆解为多个ID
+        target_ids_str = data.target_ids.strip()
+        if not target_ids_str:
+            raise CustomException(msg="target_ids不能为空")
+        
+        # 将字符串拆解为ID列表
+        try:
+            target_id_list = [int(id_str.strip()) for id_str in target_ids_str.split(',') if id_str.strip()]
+        except ValueError:
+            raise CustomException(msg="target_ids格式错误，应为逗号分隔的整数ID")
+        
+        if not target_id_list:
+            raise CustomException(msg="target_ids中未找到有效的ID")
+        
+        # 批量创建权限记录
+        created_list = []
+        error_list = []
+        
+        for target_id in target_id_list:
+            try:
+                # 构建创建Schema
+                create_data = SysLibPermissionsCreateSchema(
+                    target_type=data.target_type,
+                    target_id=target_id,
+                    lib_id=data.lib_id,
+                    privilege_type=data.privilege_type,
+                    status=data.status,
+                    description=data.description
+                )
+                
+                # 创建权限记录
+                obj = await SysLibPermissionsCRUD(auth).create_sys_lib_permissions_crud(data=create_data)
+                if obj:
+                    created_list.append(SysLibPermissionsOutSchema.model_validate(obj).model_dump())
+            except Exception as e:
+                error_list.append(f"target_id={target_id}: {str(e)}")
+                log.error(f"批量关联权限失败，target_id={target_id}: {str(e)}")
+                continue
+        
+        result = {
+            "success_count": len(created_list),
+            "total_count": len(target_id_list),
+            "created_list": created_list
+        }
+        
+        if error_list:
+            result["errors"] = error_list
+        
+        return result

@@ -12,7 +12,7 @@ from app.core.logger import log
 from app.core.base_schema import BatchSetAvailable
 
 from .service import SysLibPermissionsService
-from .schema import SysLibPermissionsCreateSchema, SysLibPermissionsUpdateSchema, SysLibPermissionsQueryParam
+from .schema import SysLibPermissionsCreateSchema, SysLibPermissionsUpdateSchema, SysLibPermissionsQueryParam, SysLibPermissionsBatchAssociateSchema
 
 SysLibPermissionsRouter = APIRouter(prefix='/sys_lib_permissions', tags=["知识库多维权限授权模块"]) 
 
@@ -124,3 +124,13 @@ async def export_sys_lib_permissions_template_controller() -> StreamingResponse:
         media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         headers={'Content-Disposition': 'attachment; filename=sys_lib_permissions_template.xlsx'}
     )
+
+@SysLibPermissionsRouter.post("/batch/associate", summary="批量关联知识库权限", description="批量关联知识库与部门、角色或用户，支持多个ID同时关联")
+async def batch_associate_sys_lib_permissions_controller(
+    data: SysLibPermissionsBatchAssociateSchema,
+    auth: AuthSchema = Depends(AuthPermission(["module_gencode:sys_lib_permissions:create"]))
+) -> JSONResponse:
+    """批量关联知识库权限接口"""
+    result_dict = await SysLibPermissionsService.batch_associate_sys_lib_permissions_service(auth=auth, data=data)
+    log.info(f"批量关联知识库权限成功，成功创建 {result_dict.get('success_count', 0)} 条记录")
+    return SuccessResponse(data=result_dict, msg=f"批量关联知识库权限成功，成功创建 {result_dict.get('success_count', 0)} 条记录")

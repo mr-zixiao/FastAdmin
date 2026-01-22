@@ -32,6 +32,18 @@ class SysLibPermissionsOutSchema(SysLibPermissionsCreateSchema, BaseSchema, User
     model_config = ConfigDict(from_attributes=True)
 
 
+class SysLibPermissionsBatchAssociateSchema(BaseModel):
+    """
+    知识库批量关联权限模型
+    """
+    target_type: str = Field(default=..., description='授权对象类型(1:部门 2:角色 3:用户)')
+    target_ids: str = Field(default=..., description='对应对象的主键ID字符串，多个ID用逗号分隔(sys_dept/sys_role/sys_user的ID)')
+    lib_id: int = Field(default=..., description='知识库主表ID')
+    privilege_type: str = Field(default=..., description='权限级别(1:查看/提问 2:上传/编辑文档 3:管理库配置)')
+    status: str = Field(default="0", description='状态(0:启用 1:禁用)')
+    description: str | None = Field(default=None, max_length=255, description='备注/描述')
+
+
 class SysLibPermissionsQueryParam:
     """知识库多维权限授权查询参数"""
 

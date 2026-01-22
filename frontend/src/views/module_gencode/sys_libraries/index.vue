@@ -336,6 +336,16 @@
             >
               删除
             </el-button>
+            <el-button
+              v-hasPerm="['module_gencode:sys_lib_permissions:create']"
+              type="warning"
+              size="small"
+              link
+              icon="setting"
+              @click="handleOpenPermissionDialog(scope.row)"
+            >
+              设置权限
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -447,6 +457,106 @@
       :page-data="pageTableData"
       :selection-data="selectionRows"
     />
+
+    <!-- 权限设置弹窗 -->
+    <el-dialog
+      v-model="permissionDialogVisible"
+      title="设置知识库权限"
+      width="600px"
+      @close="handleClosePermissionDialog"
+    >
+      <el-form
+        ref="permissionFormRef"
+        :model="permissionFormData"
+        :rules="permissionRules"
+        label-suffix=":"
+        label-width="120px"
+        label-position="right"
+      >
+        <el-form-item label="授权对象类型" prop="target_type" :required="true">
+          <el-radio-group v-model="permissionFormData.target_type" @change="handleTargetTypeChange">
+            <el-radio
+              v-for="item in dictStore.getDictArray('sys_ib_perm_target_type')"
+              :key="item.dict_value"
+              :value="item.dict_value"
+            >
+              {{ item.dict_label }}
+            </el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item
+          :label="getTargetTypeLabel()"
+          prop="target_ids"
+          :required="true"
+        >
+          <!-- 部门选择 -->
+          <template v-if="permissionFormData.target_type === '1'">
+            <TableSelect
+              :text="deptSelectText"
+              :select-config="deptSelectConfig"
+              @confirm-click="handleDeptConfirm"
+              @clear-click="handleDeptClear"
+            />
+          </template>
+          <!-- 角色选择 -->
+          <template v-else-if="permissionFormData.target_type === '2'">
+            <TableSelect
+              :text="roleSelectText"
+              :select-config="roleSelectConfig"
+              @confirm-click="handleRoleConfirm"
+              @clear-click="handleRoleClear"
+            />
+          </template>
+          <!-- 用户选择 -->
+          <template v-else-if="permissionFormData.target_type === '3'">
+            <TableSelect
+              :text="userSelectText"
+              :select-config="userSelectConfig"
+              @confirm-click="handleUserConfirm"
+              @clear-click="handleUserClear"
+            />
+          </template>
+        </el-form-item>
+        <el-form-item label="权限级别" prop="privilege_type" :required="true">
+          <el-select
+            v-model="permissionFormData.privilege_type"
+            placeholder="请选择权限级别"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="item in dictStore.getDictArray('sys_ib_perm_privilege_type')"
+              :key="item.dict_value"
+              :value="item.dict_value"
+              :label="item.dict_label"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="状态" prop="status" :required="true">
+          <el-radio-group v-model="permissionFormData.status">
+            <el-radio value="0">启用</el-radio>
+            <el-radio value="1">停用</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="备注/描述" prop="description">
+          <el-input
+            v-model="permissionFormData.description"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入备注/描述"
+            maxlength="255"
+            show-word-limit
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="handleClosePermissionDialog">取消</el-button>
+          <el-button type="primary" @click="handleSubmitPermission" :loading="permissionLoading">
+            确定
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -456,7 +566,7 @@ defineOptions({
   inheritAttrs: false,
 });
 
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, onMounted, computed, watch } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import { QuestionFilled, ArrowUp, ArrowDown, Check, CircleClose } from "@element-plus/icons-vue";
 import { formatToDateTime } from "@/utils/dateUtil";
@@ -466,11 +576,19 @@ import DatePicker from "@/components/DatePicker/index.vue";
 import type { IContentConfig } from "@/components/CURD/types";
 import ImportModal from "@/components/CURD/ImportModal.vue";
 import ExportModal from "@/components/CURD/ExportModal.vue";
+import TableSelect from "@/components/TableSelect/index.vue";
+import type { ISelectConfig } from "@/components/TableSelect/index.vue";
 import SysLibrariesAPI, {
   SysLibrariesPageQuery,
   SysLibrariesTable,
   SysLibrariesForm,
 } from "@/api/module_gencode/sys_libraries";
+import SysLibPermissionsAPI, {
+  SysLibPermissionsBatchAssociateForm,
+} from "@/api/module_gencode/sys_lib_permissions";
+import DeptAPI from "@/api/module_system/dept";
+import RoleAPI from "@/api/module_system/role";
+import UserAPI from "@/api/module_system/user";
 
 const visible = ref(true);
 const isExpand = ref(false);
@@ -484,7 +602,10 @@ const loading = ref(false);
 
 // 字典仓库与需要加载的字典类型
 const dictStore = useDictStore();
-const dictTypes: any = [];
+const dictTypes: any = [
+  "sys_ib_perm_target_type",
+  "sys_ib_perm_privilege_type",
+];
 
 // 分页表单
 const pageTableData = ref<SysLibrariesTable[]>([]);
@@ -610,6 +731,332 @@ const importDialogVisible = ref(false);
 
 // 导出弹窗显示状态
 const exportsDialogVisible = ref(false);
+
+// 权限设置弹窗相关
+const permissionDialogVisible = ref(false);
+const permissionFormRef = ref();
+const permissionLoading = ref(false);
+const currentLibrary = ref<SysLibrariesTable | null>(null);
+
+// 权限表单数据
+const permissionFormData = reactive<SysLibPermissionsBatchAssociateForm>({
+  target_type: "1",
+  target_ids: "",
+  lib_id: 0,
+  privilege_type: "1",
+  status: "0",
+  description: "",
+});
+
+// 选中的对象数据
+const selectedDepts = ref<any[]>([]);
+const selectedRoles = ref<any[]>([]);
+const selectedUsers = ref<any[]>([]);
+
+// 权限表单验证规则
+const permissionRules = reactive({
+  target_type: [{ required: true, message: "请选择授权对象类型", trigger: "change" }],
+  target_ids: [{ required: true, message: "请选择授权对象", trigger: "change" }],
+  privilege_type: [{ required: true, message: "请选择权限级别", trigger: "change" }],
+  status: [{ required: true, message: "请选择状态", trigger: "change" }],
+});
+
+// 获取授权对象类型标签
+function getTargetTypeLabel() {
+  if (!permissionFormData.target_type) return "授权对象";
+  const targetTypeDict = dictStore.getDictArray("sys_ib_perm_target_type");
+  const targetTypeItem = targetTypeDict.find((item) => item.dict_value === permissionFormData.target_type);
+  return targetTypeItem ? targetTypeItem.dict_label : "授权对象";
+}
+
+// 部门选择器配置
+const deptSelectConfig: ISelectConfig = {
+  pk: "id",
+  multiple: true,
+  width: "100%",
+  placeholder: "请选择部门",
+  popover: {
+    width: 720,
+  },
+  formItems: [
+    {
+      type: "input",
+      label: "部门名称",
+      prop: "name",
+      attrs: {
+        placeholder: "请输入部门名称",
+      },
+    },
+  ],
+  indexAction(params: any) {
+    return DeptAPI.listDept(params).then((res: any) => {
+      // 将树形结构扁平化
+      const flattenDepts = (depts: any[]): any[] => {
+        let result: any[] = [];
+        depts.forEach((dept) => {
+          result.push(dept);
+          if (dept.children && dept.children.length > 0) {
+            result = result.concat(flattenDepts(dept.children));
+          }
+        });
+        return result;
+      };
+      const deptList = res.data.data || [];
+      const flatList = flattenDepts(deptList);
+      return {
+        total: flatList.length,
+        list: flatList,
+      };
+    });
+  },
+  tableColumns: [
+    { type: "selection", width: 50, align: "center" },
+    { label: "编号", align: "center", prop: "id", width: 100 },
+    { label: "部门名称", align: "center", prop: "name" },
+    { label: "部门编码", align: "center", prop: "code", width: 120 },
+  ],
+};
+
+// 角色选择器配置
+const roleSelectConfig: ISelectConfig = {
+  pk: "id",
+  multiple: true,
+  width: "100%",
+  placeholder: "请选择角色",
+  popover: {
+    width: 720,
+  },
+  formItems: [
+    {
+      type: "input",
+      label: "角色名称",
+      prop: "name",
+      attrs: {
+        placeholder: "请输入角色名称",
+      },
+    },
+    {
+      type: "select",
+      label: "状态",
+      prop: "status",
+      attrs: {
+        placeholder: "全部",
+        clearable: true,
+      },
+      options: [
+        { label: "启用", value: "0" },
+        { label: "停用", value: "1" },
+      ],
+    },
+  ],
+  indexAction(params: any) {
+    return RoleAPI.listRole(params).then((res: any) => {
+      return {
+        total: res.data.data.total,
+        list: res.data.data.items,
+      };
+    });
+  },
+  tableColumns: [
+    { type: "selection", width: 50, align: "center" },
+    { label: "编号", align: "center", prop: "id", width: 100 },
+    { label: "角色名称", align: "center", prop: "name" },
+    { label: "角色编码", align: "center", prop: "code", width: 120 },
+  ],
+};
+
+// 用户选择器配置
+const userSelectConfig: ISelectConfig = {
+  pk: "id",
+  multiple: true,
+  width: "100%",
+  placeholder: "请选择用户",
+  popover: {
+    width: 720,
+  },
+  formItems: [
+    {
+      type: "select",
+      label: "状态",
+      prop: "status",
+      initialValue: "0",
+      attrs: {
+        placeholder: "全部",
+        clearable: true,
+      },
+      options: [
+        { label: "启用", value: "0" },
+        { label: "停用", value: "1" },
+      ],
+    },
+  ],
+  indexAction(params: any) {
+    const query: any = { ...params };
+    Object.keys(query).forEach((k) => {
+      const v = query[k];
+      if (v === "" || v === null || v === undefined) {
+        delete query[k];
+      }
+    });
+    return UserAPI.listUser(query).then((res: any) => {
+      return {
+        total: res.data.data.total,
+        list: res.data.data.items,
+      };
+    });
+  },
+  tableColumns: [
+    { type: "selection", width: 50, align: "center" },
+    { label: "编号", align: "center", prop: "id", width: 100 },
+    { label: "账号", align: "center", prop: "username" },
+    { label: "用户名", align: "center", prop: "name", width: 120 },
+  ],
+};
+
+// 选择器显示文本
+const deptSelectText = computed(() => {
+  if (selectedDepts.value.length === 0) return "";
+  return `已选择 ${selectedDepts.value.length} 个部门`;
+});
+
+const roleSelectText = computed(() => {
+  if (selectedRoles.value.length === 0) return "";
+  return `已选择 ${selectedRoles.value.length} 个角色`;
+});
+
+const userSelectText = computed(() => {
+  if (selectedUsers.value.length === 0) return "";
+  return `已选择 ${selectedUsers.value.length} 个用户`;
+});
+
+// 处理授权对象类型变化
+function handleTargetTypeChange() {
+  selectedDepts.value = [];
+  selectedRoles.value = [];
+  selectedUsers.value = [];
+  permissionFormData.target_ids = "";
+}
+
+// 部门选择确认
+function handleDeptConfirm(data: any[]) {
+  selectedDepts.value = data;
+  permissionFormData.target_ids = data.map((item) => item.id).join(",");
+  // 手动触发验证
+  if (permissionFormRef.value) {
+    permissionFormRef.value.validateField("target_ids");
+  }
+}
+
+// 部门选择清空
+function handleDeptClear() {
+  selectedDepts.value = [];
+  permissionFormData.target_ids = "";
+  // 手动触发验证
+  if (permissionFormRef.value) {
+    permissionFormRef.value.validateField("target_ids");
+  }
+}
+
+// 角色选择确认
+function handleRoleConfirm(data: any[]) {
+  selectedRoles.value = data;
+  permissionFormData.target_ids = data.map((item) => item.id).join(",");
+  // 手动触发验证
+  if (permissionFormRef.value) {
+    permissionFormRef.value.validateField("target_ids");
+  }
+}
+
+// 角色选择清空
+function handleRoleClear() {
+  selectedRoles.value = [];
+  permissionFormData.target_ids = "";
+  // 手动触发验证
+  if (permissionFormRef.value) {
+    permissionFormRef.value.validateField("target_ids");
+  }
+}
+
+// 用户选择确认
+function handleUserConfirm(data: any[]) {
+  selectedUsers.value = data;
+  permissionFormData.target_ids = data.map((item) => item.id).join(",");
+  // 手动触发验证
+  if (permissionFormRef.value) {
+    permissionFormRef.value.validateField("target_ids");
+  }
+}
+
+// 用户选择清空
+function handleUserClear() {
+  selectedUsers.value = [];
+  permissionFormData.target_ids = "";
+  // 手动触发验证
+  if (permissionFormRef.value) {
+    permissionFormRef.value.validateField("target_ids");
+  }
+}
+
+// 打开权限设置弹窗
+function handleOpenPermissionDialog(row: SysLibrariesTable) {
+  currentLibrary.value = row;
+  permissionFormData.lib_id = row.id!;
+  // 设置默认值为字典中的第一个值
+  const targetTypeDict = dictStore.getDictArray("sys_ib_perm_target_type");
+  permissionFormData.target_type = targetTypeDict.length > 0 ? targetTypeDict[0].dict_value : "";
+  permissionFormData.target_ids = "";
+  const privilegeTypeDict = dictStore.getDictArray("sys_ib_perm_privilege_type");
+  permissionFormData.privilege_type = privilegeTypeDict.length > 0 ? privilegeTypeDict[0].dict_value : "";
+  permissionFormData.status = "0";
+  permissionFormData.description = "";
+  selectedDepts.value = [];
+  selectedRoles.value = [];
+  selectedUsers.value = [];
+  permissionDialogVisible.value = true;
+}
+
+// 关闭权限设置弹窗
+function handleClosePermissionDialog() {
+  permissionDialogVisible.value = false;
+  if (permissionFormRef.value) {
+    permissionFormRef.value.resetFields();
+    permissionFormRef.value.clearValidate();
+  }
+  currentLibrary.value = null;
+  selectedDepts.value = [];
+  selectedRoles.value = [];
+  selectedUsers.value = [];
+}
+
+// 提交权限设置
+async function handleSubmitPermission() {
+  if (!permissionFormRef.value) return;
+  
+  permissionFormRef.value.validate(async (valid: any) => {
+    if (valid) {
+      if (!permissionFormData.target_ids) {
+        ElMessage.warning("请选择授权对象");
+        return;
+      }
+      
+      permissionLoading.value = true;
+      try {
+        const response = await SysLibPermissionsAPI.batchAssociateSysLibPermissions(permissionFormData);
+        if (response.data.code === ResultEnum.SUCCESS) {
+          ElMessage.success(response.data.msg || "批量关联权限成功");
+          handleClosePermissionDialog();
+        } else {
+          ElMessage.error(response.data.msg || "批量关联权限失败");
+        }
+      } catch (error: any) {
+        console.error(error);
+        ElMessage.error(error?.response?.data?.msg || "批量关联权限失败");
+      } finally {
+        permissionLoading.value = false;
+      }
+    }
+  });
+}
 
 // 打开导入弹窗
 function handleOpenImportDialog() {

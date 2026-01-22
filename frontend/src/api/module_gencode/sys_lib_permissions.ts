@@ -84,6 +84,15 @@ const SysLibPermissionsAPI = {
       headers: { "Content-Type": "multipart/form-data" },
     });
   },
+
+  // 批量关联知识库权限
+  batchAssociateSysLibPermissions(body: SysLibPermissionsBatchAssociateForm) {
+    return request<ApiResponse>({
+      url: `${API_PATH}/batch/associate`,
+      method: "post",
+      data: body,
+    });
+  },
 };
 
 export default SysLibPermissionsAPI;
@@ -123,4 +132,14 @@ export interface SysLibPermissionsForm extends BaseFormType{
   target_id?: string;
   lib_id?: string;
   privilege_type?: string;
+}
+
+// 批量关联表单参数
+export interface SysLibPermissionsBatchAssociateForm {
+  target_type: string;
+  target_ids: string; // 逗号分隔的ID字符串
+  lib_id: number;
+  privilege_type: string;
+  status?: string;
+  description?: string;
 }
