@@ -94,30 +94,45 @@ export default SysLibrariesAPI;
 
 // 列表查询参数
 export interface SysLibrariesPageQuery extends PageQuery {
-  name?: string;
-  collection_name?: string;
-  dept_code?: string;
   status?: string;
   created_id?: number;
   updated_id?: number;
+  lib_name?: string;
+  collection_name?: string;
+  lib_type?: string;
+  embedding_model?: string;
+  chunk_size?: string;
+  chunk_overlap?: string;
+  similarity_threshold?: string;
+  max_chunks?: string;
   created_time?: string[];
   updated_time?: string[];
 }
 
 // 列表展示项
 export interface SysLibrariesTable extends BaseType{
-  name?: string;
-  collection_name?: string;
-  dept_code?: string;
   created_id?: string;
   updated_id?: string;
+  lib_name?: string;
+  collection_name?: string;
+  lib_type?: string;
+  embedding_model?: string;
+  chunk_size?: string;
+  chunk_overlap?: string;
+  similarity_threshold?: string;
+  max_chunks?: string;
   created_by?: CommonType;
   updated_by?: CommonType;
 }
 
 // 新增/修改/详情表单参数
 export interface SysLibrariesForm extends BaseFormType{
-  name?: string;
+  lib_name?: string;
   collection_name?: string;
-  dept_code?: string;
+  lib_type?: string;
+  embedding_model?: string;
+  chunk_size?: string;
+  chunk_overlap?: string;
+  similarity_threshold?: string;
+  max_chunks?: string;
 }

@@ -10,16 +10,6 @@
         :inline="true"
         @submit.prevent="handleQuery"
       >
-        <el-form-item label="知识库名称" prop="name">
-          <el-input v-model="queryFormData.name" placeholder="请输入知识库名称" clearable />
-        </el-form-item>
-        <el-form-item label="对应向量库Collection名称" prop="collection_name">
-          <el-input
-            v-model="queryFormData.collection_name"
-            placeholder="请输入对应向量库Collection名称"
-            clearable
-          />
-        </el-form-item>
         <el-form-item prop="status" label="状态">
           <el-select
             v-model="queryFormData.status"
@@ -32,16 +22,10 @@
           </el-select>
         </el-form-item>
         <el-form-item v-if="isExpand" prop="created_time" label="创建时间">
-          <DatePicker
-            v-model="createdDateRange"
-            @update:model-value="handleCreatedDateRangeChange"
-          />
+          <DatePicker v-model="createdDateRange" @update:model-value="handleCreatedDateRangeChange" />
         </el-form-item>
         <el-form-item v-if="isExpand" prop="updated_time" label="更新时间">
-          <DatePicker
-            v-model="updatedDateRange"
-            @update:model-value="handleUpdatedDateRangeChange"
-          />
+          <DatePicker v-model="updatedDateRange" @update:model-value="handleUpdatedDateRangeChange" />
         </el-form-item>
         <el-form-item v-if="isExpand" prop="created_id" label="创建人">
           <UserTableSelect
@@ -56,6 +40,30 @@
             @confirm-click="handleConfirm"
             @clear-click="handleQuery"
           />
+        </el-form-item>
+        <el-form-item label="知识库名称" prop="lib_name">
+          <el-input v-model="queryFormData.lib_name" placeholder="请输入知识库名称" clearable />
+        </el-form-item>
+        <el-form-item label="向量数据库的集合名称" prop="collection_name">
+          <el-input v-model="queryFormData.collection_name" placeholder="请输入向量数据库的集合名称" clearable />
+        </el-form-item>
+        <el-form-item label="知识库类型(vector:向量库 text:文本库)" prop="lib_type">
+          <el-input v-model="queryFormData.lib_type" placeholder="请输入知识库类型(vector:向量库 text:文本库)" clearable />
+        </el-form-item>
+        <el-form-item label="嵌入模型名称" prop="embedding_model">
+          <el-input v-model="queryFormData.embedding_model" placeholder="请输入嵌入模型名称" clearable />
+        </el-form-item>
+        <el-form-item label="文档切片大小" prop="chunk_size">
+          <el-input v-model="queryFormData.chunk_size" placeholder="请输入文档切片大小" clearable />
+        </el-form-item>
+        <el-form-item label="文档切片重叠大小" prop="chunk_overlap">
+          <el-input v-model="queryFormData.chunk_overlap" placeholder="请输入文档切片重叠大小" clearable />
+        </el-form-item>
+        <el-form-item label="相似度阈值" prop="similarity_threshold">
+          <el-input v-model="queryFormData.similarity_threshold" placeholder="请输入相似度阈值" clearable />
+        </el-form-item>
+        <el-form-item label="最大切片数量" prop="max_chunks">
+          <el-input v-model="queryFormData.max_chunks" placeholder="请输入最大切片数量" clearable />
         </el-form-item>
         <!-- 查询、重置、展开/收起按钮 -->
         <el-form-item>
@@ -242,61 +250,44 @@
             {{ (queryFormData.page_no - 1) * queryFormData.page_size + scope.$index + 1 }}
           </template>
         </el-table-column>
-        <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'name')?.show"
-          label="知识库名称"
-          prop="name"
-          min-width="140"
-        ></el-table-column>
-        <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'collection_name')?.show"
-          label="对应向量库Collection名称"
-          prop="collection_name"
-          min-width="140"
-        ></el-table-column>
-        <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'status')?.show"
-          label="状态(0:启用 1:禁用)"
-          prop="status"
-          min-width="140"
-        >
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'status')?.show" label="是否启用(0:启用 1:禁用)" prop="status" min-width="140">
           <template #default="scope">
             <el-tag :type="scope.row.status == '0' ? 'success' : 'info'">
-              {{ scope.row.status == "0" ? "启用" : "停用" }}
+              {{ scope.row.status == '0' ? '启用' : '停用' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'created_time')?.show"
-          label="创建时间"
-          prop="created_time"
-          min-width="140"
-        ></el-table-column>
-        <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'updated_time')?.show"
-          label="更新时间"
-          prop="updated_time"
-          min-width="140"
-        ></el-table-column>
-        <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'created_id')?.show"
-          label="创建人ID"
-          prop="created_id"
-          min-width="140"
-        >
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'description')?.show" label="备注/描述" prop="description" min-width="140">
+        </el-table-column>
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'created_time')?.show" label="创建时间" prop="created_time" min-width="140">
+        </el-table-column>
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'updated_time')?.show" label="更新时间" prop="updated_time" min-width="140">
+        </el-table-column>
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'created_id')?.show" label="创建人ID" prop="created_id" min-width="140">
           <template #default="scope">
             <el-tag>{{ scope.row.created_by?.name }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column
-          v-if="tableColumns.find((col) => col.prop === 'updated_id')?.show"
-          label="更新人ID"
-          prop="updated_id"
-          min-width="140"
-        >
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'updated_id')?.show" label="更新人ID" prop="updated_id" min-width="140">
           <template #default="scope">
             <el-tag>{{ scope.row.updated_by?.name }}</el-tag>
           </template>
+        </el-table-column>
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'lib_name')?.show" label="知识库名称" prop="lib_name" min-width="140">
+        </el-table-column>
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'collection_name')?.show" label="向量数据库的集合名称" prop="collection_name" min-width="140">
+        </el-table-column>
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'lib_type')?.show" label="知识库类型(vector:向量库 text:文本库)" prop="lib_type" min-width="140">
+        </el-table-column>
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'embedding_model')?.show" label="嵌入模型名称" prop="embedding_model" min-width="140">
+        </el-table-column>
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'chunk_size')?.show" label="文档切片大小" prop="chunk_size" min-width="140">
+        </el-table-column>
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'chunk_overlap')?.show" label="文档切片重叠大小" prop="chunk_overlap" min-width="140">
+        </el-table-column>
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'similarity_threshold')?.show" label="相似度阈值" prop="similarity_threshold" min-width="140">
+        </el-table-column>
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'max_chunks')?.show" label="最大切片数量" prop="max_chunks" min-width="140">
         </el-table-column>
         <el-table-column
           v-if="tableColumns.find((col) => col.prop === 'operation')?.show"
@@ -360,62 +351,101 @@
       <!-- 详情 -->
       <template v-if="dialogVisible.type === 'detail'">
         <el-descriptions :column="4" border>
-          <el-descriptions-item label="主键ID" :span="2">
-            {{ detailFormData.id }}
-          </el-descriptions-item>
-          <el-descriptions-item label="UUID全局唯一标识" :span="2">
-            {{ detailFormData.uuid }}
-          </el-descriptions-item>
-          <el-descriptions-item label="知识库名称" :span="2">
-            {{ detailFormData.name }}
-          </el-descriptions-item>
-          <el-descriptions-item label="对应向量库Collection名称" :span="2">
-            {{ detailFormData.collection_name }}
-          </el-descriptions-item>
-          <el-descriptions-item label="状态" :span="2">
-            <el-tag :type="detailFormData.status == '0' ? 'success' : 'danger'">
-              {{ detailFormData.status == "0" ? "启用" : "停用" }}
-            </el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item label="创建时间" :span="2">
-            {{ detailFormData.created_time }}
-          </el-descriptions-item>
-          <el-descriptions-item label="更新时间" :span="2">
-            {{ detailFormData.updated_time }}
-          </el-descriptions-item>
-          <el-descriptions-item label="创建人" :span="2">
-            {{ detailFormData.created_by?.name }}
-          </el-descriptions-item>
-          <el-descriptions-item label="更新人" :span="2">
-            {{ detailFormData.updated_by?.name }}
-          </el-descriptions-item>
+            <el-descriptions-item label="主键ID" :span="2">
+              {{ detailFormData.id }}
+            </el-descriptions-item>
+            <el-descriptions-item label="UUID全局唯一标识" :span="2">
+              {{ detailFormData.uuid }}
+            </el-descriptions-item>
+            <el-descriptions-item label="状态" :span="2">
+              <el-tag :type="detailFormData.status == '0' ? 'success' : 'danger'">
+                {{ detailFormData.status == '0' ? "启用" : "停用" }}
+              </el-tag>
+            </el-descriptions-item>
+            <el-descriptions-item label="备注/描述" :span="2">
+              {{ detailFormData.description }}
+            </el-descriptions-item>
+            <el-descriptions-item label="创建时间" :span="2">
+              {{ detailFormData.created_time }}
+            </el-descriptions-item>
+            <el-descriptions-item label="更新时间" :span="2">
+              {{ detailFormData.updated_time }}
+            </el-descriptions-item>
+            <el-descriptions-item label="创建人" :span="2">
+              {{ detailFormData.created_by?.name }}
+            </el-descriptions-item>
+            <el-descriptions-item label="更新人" :span="2">
+              {{ detailFormData.updated_by?.name }}
+            </el-descriptions-item>
+            <el-descriptions-item label="知识库名称" :span="2">
+              {{ detailFormData.lib_name }}
+            </el-descriptions-item>
+            <el-descriptions-item label="向量数据库的集合名称" :span="2">
+              {{ detailFormData.collection_name }}
+            </el-descriptions-item>
+            <el-descriptions-item label="知识库类型(vector:向量库 text:文本库)" :span="2">
+              {{ detailFormData.lib_type }}
+            </el-descriptions-item>
+            <el-descriptions-item label="嵌入模型名称" :span="2">
+              {{ detailFormData.embedding_model }}
+            </el-descriptions-item>
+            <el-descriptions-item label="文档切片大小" :span="2">
+              {{ detailFormData.chunk_size }}
+            </el-descriptions-item>
+            <el-descriptions-item label="文档切片重叠大小" :span="2">
+              {{ detailFormData.chunk_overlap }}
+            </el-descriptions-item>
+            <el-descriptions-item label="相似度阈值" :span="2">
+              {{ detailFormData.similarity_threshold }}
+            </el-descriptions-item>
+            <el-descriptions-item label="最大切片数量" :span="2">
+              {{ detailFormData.max_chunks }}
+            </el-descriptions-item>
         </el-descriptions>
       </template>
 
       <!-- 新增、编辑表单 -->
       <template v-else>
-        <el-form
-          ref="dataFormRef"
-          :model="formData"
-          :rules="rules"
-          label-suffix=":"
-          label-width="auto"
-          label-position="right"
-        >
-          <el-form-item label="知识库名称" prop="name" :required="false">
-            <el-input v-model="formData.name" placeholder="请输入知识库名称" />
-          </el-form-item>
-          <el-form-item label="对应向量库Collection名称" prop="collection_name" :required="false">
-            <el-input
-              v-model="formData.collection_name"
-              placeholder="请输入对应向量库Collection名称"
-            />
-          </el-form-item>
+        <el-form ref="dataFormRef" :model="formData" :rules="rules" label-suffix=":" label-width="auto" label-position="right">
           <el-form-item label="状态" prop="status" :required="true">
             <el-radio-group v-model="formData.status">
               <el-radio value="0">启用</el-radio>
               <el-radio value="1">停用</el-radio>
             </el-radio-group>
+          </el-form-item>
+          <el-form-item label="描述" prop="description">
+            <el-input
+              v-model="formData.description"
+              :rows="4"
+              :maxlength="100"
+              show-word-limit
+              type="textarea"
+              placeholder="请输入描述"
+            />
+          </el-form-item>
+          <el-form-item label="知识库名称" prop="lib_name" :required="false">
+            <el-input v-model="formData.lib_name" placeholder="请输入知识库名称" />
+          </el-form-item>
+          <el-form-item label="向量数据库的集合名称" prop="collection_name" :required="false">
+            <el-input v-model="formData.collection_name" placeholder="请输入向量数据库的集合名称" />
+          </el-form-item>
+          <el-form-item label="知识库类型(vector:向量库 text:文本库)" prop="lib_type" :required="false">
+            <el-input v-model="formData.lib_type" placeholder="请输入知识库类型(vector:向量库 text:文本库)" />
+          </el-form-item>
+          <el-form-item label="嵌入模型名称" prop="embedding_model" :required="false">
+            <el-input v-model="formData.embedding_model" placeholder="请输入嵌入模型名称" />
+          </el-form-item>
+          <el-form-item label="文档切片大小" prop="chunk_size" :required="false">
+            <el-input v-model="formData.chunk_size" placeholder="请输入文档切片大小" />
+          </el-form-item>
+          <el-form-item label="文档切片重叠大小" prop="chunk_overlap" :required="false">
+            <el-input v-model="formData.chunk_overlap" placeholder="请输入文档切片重叠大小" />
+          </el-form-item>
+          <el-form-item label="相似度阈值" prop="similarity_threshold" :required="false">
+            <el-input v-model="formData.similarity_threshold" placeholder="请输入相似度阈值" />
+          </el-form-item>
+          <el-form-item label="最大切片数量" prop="max_chunks" :required="false">
+            <el-input v-model="formData.max_chunks" placeholder="请输入最大切片数量" />
           </el-form-item>
         </el-form>
       </template>
@@ -456,21 +486,17 @@ defineOptions({
   inheritAttrs: false,
 });
 
-import { ref, reactive, onMounted } from "vue";
-import { ElMessage, ElMessageBox } from "element-plus";
-import { QuestionFilled, ArrowUp, ArrowDown, Check, CircleClose } from "@element-plus/icons-vue";
+import { ref, reactive, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { QuestionFilled, ArrowUp, ArrowDown, Check, CircleClose } from '@element-plus/icons-vue'
 import { formatToDateTime } from "@/utils/dateUtil";
 import { useDictStore } from "@/store";
-import { ResultEnum } from "@/enums/api/result.enum";
+import { ResultEnum } from '@/enums/api/result.enum'
 import DatePicker from "@/components/DatePicker/index.vue";
 import type { IContentConfig } from "@/components/CURD/types";
 import ImportModal from "@/components/CURD/ImportModal.vue";
 import ExportModal from "@/components/CURD/ExportModal.vue";
-import SysLibrariesAPI, {
-  SysLibrariesPageQuery,
-  SysLibrariesTable,
-  SysLibrariesForm,
-} from "@/api/module_gencode/sys_libraries";
+import SysLibrariesAPI, { SysLibrariesPageQuery, SysLibrariesTable, SysLibrariesForm } from '@/api/module_gencode/sys_libraries'
 
 const visible = ref(true);
 const isExpand = ref(false);
@@ -483,8 +509,9 @@ const selectionRows = ref<SysLibrariesTable[]>([]);
 const loading = ref(false);
 
 // 字典仓库与需要加载的字典类型
-const dictStore = useDictStore();
-const dictTypes: any = [];
+const dictStore = useDictStore()
+const dictTypes: any = [
+]
 
 // 分页表单
 const pageTableData = ref<SysLibrariesTable[]>([]);
@@ -493,26 +520,40 @@ const pageTableData = ref<SysLibrariesTable[]>([]);
 const tableColumns = ref([
   { prop: "selection", label: "选择框", show: true },
   { prop: "index", label: "序号", show: true },
-  { prop: "name", label: "知识库名称", show: true },
-  { prop: "collection_name", label: "对应向量库Collection名称", show: true },
-  { prop: "status", label: "状态(0:启用 1:禁用)", show: true },
-  { prop: "created_time", label: "创建时间", show: true },
-  { prop: "updated_time", label: "更新时间", show: true },
-  { prop: "created_id", label: "创建人ID", show: true },
-  { prop: "updated_id", label: "更新人ID", show: true },
-  { prop: "operation", label: "操作", show: true },
+  { prop: 'status', label: '是否启用(0:启用 1:禁用)', show: true },
+  { prop: 'description', label: '备注/描述', show: true },
+  { prop: 'created_time', label: '创建时间', show: true },
+  { prop: 'updated_time', label: '更新时间', show: true },
+  { prop: 'created_id', label: '创建人ID', show: true },
+  { prop: 'updated_id', label: '更新人ID', show: true },
+  { prop: 'lib_name', label: '知识库名称', show: true },
+  { prop: 'collection_name', label: '向量数据库的集合名称', show: true },
+  { prop: 'lib_type', label: '知识库类型(vector:向量库 text:文本库)', show: true },
+  { prop: 'embedding_model', label: '嵌入模型名称', show: true },
+  { prop: 'chunk_size', label: '文档切片大小', show: true },
+  { prop: 'chunk_overlap', label: '文档切片重叠大小', show: true },
+  { prop: 'similarity_threshold', label: '相似度阈值', show: true },
+  { prop: 'max_chunks', label: '最大切片数量', show: true },
+  { prop: 'operation', label: '操作', show: true }
 ]);
 
 // 导出列（不含选择/序号/操作）
 const exportColumns = [
-  { prop: "name", label: "知识库名称" },
-  { prop: "collection_name", label: "对应向量库Collection名称" },
-  { prop: "status", label: "状态(0:启用 1:禁用)" },
-  { prop: "created_time", label: "创建时间" },
-  { prop: "updated_time", label: "更新时间" },
-  { prop: "created_id", label: "创建人ID" },
-  { prop: "updated_id", label: "更新人ID" },
-];
+  { prop: 'status', label: '是否启用(0:启用 1:禁用)' },
+  { prop: 'description', label: '备注/描述' },
+  { prop: 'created_time', label: '创建时间' },
+  { prop: 'updated_time', label: '更新时间' },
+  { prop: 'created_id', label: '创建人ID' },
+  { prop: 'updated_id', label: '更新人ID' },
+  { prop: 'lib_name', label: '知识库名称' },
+  { prop: 'collection_name', label: '向量数据库的集合名称' },
+  { prop: 'lib_type', label: '知识库类型(vector:向量库 text:文本库)' },
+  { prop: 'embedding_model', label: '嵌入模型名称' },
+  { prop: 'chunk_size', label: '文档切片大小' },
+  { prop: 'chunk_overlap', label: '文档切片重叠大小' },
+  { prop: 'similarity_threshold', label: '相似度阈值' },
+  { prop: 'max_chunks', label: '最大切片数量' },
+]
 
 // 导入/导出配置
 const curdContentConfig = {
@@ -521,7 +562,7 @@ const curdContentConfig = {
   importTemplate: () => SysLibrariesAPI.downloadTemplateSysLibraries(),
   exportsAction: async (params: any) => {
     const query: any = { ...params };
-    query.status = "0";
+    query.status = '0';
     query.page_no = 1;
     query.page_size = 9999;
     const all: any[] = [];
@@ -568,21 +609,35 @@ function handleUpdatedDateRangeChange(range: [Date, Date]) {
 const queryFormData = reactive<SysLibrariesPageQuery>({
   page_no: 1,
   page_size: 10,
-  name: undefined,
-  collection_name: undefined,
   status: undefined,
   created_time: undefined,
   updated_time: undefined,
   created_id: undefined,
   updated_id: undefined,
+  lib_name: undefined,
+  collection_name: undefined,
+  lib_type: undefined,
+  embedding_model: undefined,
+  chunk_size: undefined,
+  chunk_overlap: undefined,
+  similarity_threshold: undefined,
+  max_chunks: undefined,
 });
+
 
 // 编辑表单
 const formData = reactive<SysLibrariesForm>({
   id: undefined,
-  name: undefined,
-  collection_name: undefined,
   status: undefined,
+  description: undefined,
+  lib_name: undefined,
+  collection_name: undefined,
+  lib_type: undefined,
+  embedding_model: undefined,
+  chunk_size: undefined,
+  chunk_overlap: undefined,
+  similarity_threshold: undefined,
+  max_chunks: undefined,
 });
 
 // 弹窗状态
@@ -594,15 +649,54 @@ const dialogVisible = reactive({
 
 // 表单验证规则
 const rules = reactive({
-  id: [{ required: false, message: "请输入主键ID", trigger: "blur" }],
-  uuid: [{ required: true, message: "请输入UUID全局唯一标识", trigger: "blur" }],
-  name: [{ required: true, message: "请输入知识库名称", trigger: "blur" }],
-  collection_name: [{ required: true, message: "请输入对应向量库Collection名称", trigger: "blur" }],
-  status: [{ required: true, message: "请输入状态(0:启用 1:禁用)", trigger: "blur" }],
-  created_time: [{ required: true, message: "请输入创建时间", trigger: "blur" }],
-  updated_time: [{ required: true, message: "请输入更新时间", trigger: "blur" }],
-  created_id: [{ required: false, message: "请输入创建人ID", trigger: "blur" }],
-  updated_id: [{ required: false, message: "请输入更新人ID", trigger: "blur" }],
+  id: [
+    { required: false, message: '请输入主键ID', trigger: 'blur' },
+  ],
+  uuid: [
+    { required: true, message: '请输入UUID全局唯一标识', trigger: 'blur' },
+  ],
+  status: [
+    { required: true, message: '请输入是否启用(0:启用 1:禁用)', trigger: 'blur' },
+  ],
+  description: [
+    { required: false, message: '请输入备注/描述', trigger: 'blur' },
+  ],
+  created_time: [
+    { required: true, message: '请输入创建时间', trigger: 'blur' },
+  ],
+  updated_time: [
+    { required: true, message: '请输入更新时间', trigger: 'blur' },
+  ],
+  created_id: [
+    { required: false, message: '请输入创建人ID', trigger: 'blur' },
+  ],
+  updated_id: [
+    { required: false, message: '请输入更新人ID', trigger: 'blur' },
+  ],
+  lib_name: [
+    { required: true, message: '请输入知识库名称', trigger: 'blur' },
+  ],
+  collection_name: [
+    { required: true, message: '请输入向量数据库的集合名称', trigger: 'blur' },
+  ],
+  lib_type: [
+    { required: false, message: '请输入知识库类型(vector:向量库 text:文本库)', trigger: 'blur' },
+  ],
+  embedding_model: [
+    { required: false, message: '请输入嵌入模型名称', trigger: 'blur' },
+  ],
+  chunk_size: [
+    { required: false, message: '请输入文档切片大小', trigger: 'blur' },
+  ],
+  chunk_overlap: [
+    { required: false, message: '请输入文档切片重叠大小', trigger: 'blur' },
+  ],
+  similarity_threshold: [
+    { required: false, message: '请输入相似度阈值', trigger: 'blur' },
+  ],
+  max_chunks: [
+    { required: false, message: '请输入最大切片数量', trigger: 'blur' },
+  ],
 });
 
 // 导入弹窗显示状态
@@ -666,9 +760,16 @@ async function handleResetQuery() {
 // 定义初始表单数据常量
 const initialFormData: SysLibrariesForm = {
   id: undefined,
-  name: undefined,
-  collection_name: undefined,
   status: undefined,
+  description: undefined,
+  lib_name: undefined,
+  collection_name: undefined,
+  lib_type: undefined,
+  embedding_model: undefined,
+  chunk_size: undefined,
+  chunk_overlap: undefined,
+  similarity_threshold: undefined,
+  max_chunks: undefined,
 };
 
 // 重置表单
@@ -708,9 +809,16 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
   } else {
     dialogVisible.title = "新增SysLibraries";
     formData.id = undefined;
-    formData.name = undefined;
-    formData.collection_name = undefined;
     formData.status = undefined;
+    formData.description = undefined;
+    formData.lib_name = undefined;
+    formData.collection_name = undefined;
+    formData.lib_type = undefined;
+    formData.embedding_model = undefined;
+    formData.chunk_size = undefined;
+    formData.chunk_overlap = undefined;
+    formData.similarity_threshold = undefined;
+    formData.max_chunks = undefined;
   }
   dialogVisible.visible = true;
 }
@@ -817,10 +925,11 @@ const handleUpload = async (formData: FormData) => {
 onMounted(async () => {
   // 预加载字典数据
   if (dictTypes.length > 0) {
-    await dictStore.getDict(dictTypes);
+    await dictStore.getDict(dictTypes)
   }
   loadingData();
 });
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+</style>
