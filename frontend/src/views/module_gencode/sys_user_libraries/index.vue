@@ -1,4 +1,4 @@
-<!-- 文档切片明细 -->
+<!-- 用户与知识库关联 -->
 <template>
   <div class="app-container">
     <!-- 搜索区域 -->
@@ -10,23 +10,14 @@
         :inline="true"
         @submit.prevent="handleQuery"
       >
-        <el-form-item label="关联文档主表ID" prop="doc_id">
-          <el-input v-model="queryFormData.doc_id" placeholder="请输入关联文档主表ID" clearable />
+        <el-form-item label="用户ID" prop="user_id">
+          <el-input v-model="queryFormData.user_id" placeholder="请输入用户ID" clearable />
         </el-form-item>
-        <el-form-item label="关联向量数据库中的唯一ID" prop="vector_id">
-          <el-input v-model="queryFormData.vector_id" placeholder="请输入关联向量数据库中的唯一ID" clearable />
+        <el-form-item label="知识库ID" prop="lib_id">
+          <el-input v-model="queryFormData.lib_id" placeholder="请输入知识库ID" clearable />
         </el-form-item>
-        <el-form-item label="切片原文内容" prop="content">
-          <el-input v-model="queryFormData.content" placeholder="请输入切片原文内容" clearable />
-        </el-form-item>
-        <el-form-item label="所在文档原始页码" prop="page_number">
-          <el-input v-model="queryFormData.page_number" placeholder="请输入所在文档原始页码" clearable />
-        </el-form-item>
-        <el-form-item label="在原文档中的切片顺序" prop="chunk_order">
-          <el-input v-model="queryFormData.chunk_order" placeholder="请输入在原文档中的切片顺序" clearable />
-        </el-form-item>
-        <el-form-item label="该切片的Token预估数量" prop="token_count">
-          <el-input v-model="queryFormData.token_count" placeholder="请输入该切片的Token预估数量" clearable />
+        <el-form-item label="权限类型(read:只读 write:读写 admin:管理员)" prop="privilege_type">
+          <el-input v-model="queryFormData.privilege_type" placeholder="请输入权限类型(read:只读 write:读写 admin:管理员)" clearable />
         </el-form-item>
         <el-form-item prop="status" label="状态">
           <el-select
@@ -62,7 +53,7 @@
         <!-- 查询、重置、展开/收起按钮 -->
         <el-form-item>
           <el-button
-            v-hasPerm="['module_gencode:sys_document_chunks:query']"
+            v-hasPerm="['module_gencode:sys_user_libraries:query']"
             type="primary"
             icon="search"
             @click="handleQuery"
@@ -70,7 +61,7 @@
             查询
           </el-button>
           <el-button
-            v-hasPerm="['module_gencode:sys_document_chunks:query']"
+            v-hasPerm="['module_gencode:sys_user_libraries:query']"
             icon="refresh"
             @click="handleResetQuery"
           >
@@ -99,8 +90,8 @@
       <template #header>
         <div class="card-header">
           <span>
-            文档切片明细列表
-            <el-tooltip content="文档切片明细列表">
+            用户与知识库关联列表
+            <el-tooltip content="用户与知识库关联列表">
               <QuestionFilled class="w-4 h-4 mx-1" />
             </el-tooltip>
           </span>
@@ -113,7 +104,7 @@
           <el-row :gutter="10">
             <el-col :span="1.5">
               <el-button
-                v-hasPerm="['module_gencode:sys_document_chunks:create']"
+                v-hasPerm="['module_gencode:sys_user_libraries:create']"
                 type="success"
                 icon="plus"
                 @click="handleOpenDialog('create')"
@@ -123,7 +114,7 @@
             </el-col>
             <el-col :span="1.5">
               <el-button
-                v-hasPerm="['module_gencode:sys_document_chunks:delete']"
+                v-hasPerm="['module_gencode:sys_user_libraries:delete']"
                 type="danger"
                 icon="delete"
                 :disabled="selectIds.length === 0"
@@ -133,7 +124,7 @@
               </el-button>
             </el-col>
             <el-col :span="1.5">
-              <el-dropdown v-hasPerm="['module_gencode:sys_document_chunks:batch']" trigger="click">
+              <el-dropdown v-hasPerm="['module_gencode:sys_user_libraries:batch']" trigger="click">
                 <el-button type="default" :disabled="selectIds.length === 0" icon="ArrowDown">
                   更多
                 </el-button>
@@ -156,7 +147,7 @@
             <el-col :span="1.5">
               <el-tooltip content="导入">
                 <el-button
-                  v-hasPerm="['module_gencode:sys_document_chunks:import']"
+                  v-hasPerm="['module_gencode:sys_user_libraries:import']"
                   type="success"
                   icon="upload"
                   circle
@@ -167,7 +158,7 @@
             <el-col :span="1.5">
               <el-tooltip content="导出">
                 <el-button
-                  v-hasPerm="['module_gencode:sys_document_chunks:export']"
+                  v-hasPerm="['module_gencode:sys_user_libraries:export']"
                   type="warning"
                   icon="download"
                   circle
@@ -189,7 +180,7 @@
             <el-col :span="1.5">
               <el-tooltip content="刷新">
                 <el-button
-                  v-hasPerm="['module_gencode:sys_document_chunks:query']"
+                  v-hasPerm="['module_gencode:sys_user_libraries:query']"
                   type="primary"
                   icon="refresh"
                   circle
@@ -244,19 +235,13 @@
             {{ (queryFormData.page_no - 1) * queryFormData.page_size + scope.$index + 1 }}
           </template>
         </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'doc_id')?.show" label="关联文档主表ID" prop="doc_id" min-width="140">
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'user_id')?.show" label="用户ID" prop="user_id" min-width="140">
         </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'vector_id')?.show" label="关联向量数据库中的唯一ID" prop="vector_id" min-width="140">
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'lib_id')?.show" label="知识库ID" prop="lib_id" min-width="140">
         </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'content')?.show" label="切片原文内容" prop="content" min-width="140">
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'privilege_type')?.show" label="权限类型(read:只读 write:读写 admin:管理员)" prop="privilege_type" min-width="140">
         </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'page_number')?.show" label="所在文档原始页码" prop="page_number" min-width="140">
-        </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'chunk_order')?.show" label="在原文档中的切片顺序" prop="chunk_order" min-width="140">
-        </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'token_count')?.show" label="该切片的Token预估数量" prop="token_count" min-width="140">
-        </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'status')?.show" label="状态(0:启用 1:禁用)" prop="status" min-width="140">
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'status')?.show" label="是否启用(0:启用 1:禁用)" prop="status" min-width="140">
           <template #default="scope">
             <el-tag :type="scope.row.status == '0' ? 'success' : 'info'">
               {{ scope.row.status == '0' ? '启用' : '停用' }}
@@ -288,7 +273,7 @@
         >
           <template #default="scope">
             <el-button
-              v-hasPerm="['module_gencode:sys_document_chunks:detail']"
+              v-hasPerm="['module_gencode:sys_user_libraries:detail']"
               type="info"
               size="small"
               link
@@ -298,7 +283,7 @@
               详情
             </el-button>
             <el-button
-              v-hasPerm="['module_gencode:sys_document_chunks:update']"
+              v-hasPerm="['module_gencode:sys_user_libraries:update']"
               type="primary"
               size="small"
               link
@@ -308,7 +293,7 @@
               编辑
             </el-button>
             <el-button
-              v-hasPerm="['module_gencode:sys_document_chunks:delete']"
+              v-hasPerm="['module_gencode:sys_user_libraries:delete']"
               type="danger"
               size="small"
               link
@@ -341,29 +326,20 @@
       <!-- 详情 -->
       <template v-if="dialogVisible.type === 'detail'">
         <el-descriptions :column="4" border>
+            <el-descriptions-item label="用户ID" :span="2">
+              {{ detailFormData.user_id }}
+            </el-descriptions-item>
+            <el-descriptions-item label="知识库ID" :span="2">
+              {{ detailFormData.lib_id }}
+            </el-descriptions-item>
+            <el-descriptions-item label="权限类型(read:只读 write:读写 admin:管理员)" :span="2">
+              {{ detailFormData.privilege_type }}
+            </el-descriptions-item>
             <el-descriptions-item label="主键ID" :span="2">
               {{ detailFormData.id }}
             </el-descriptions-item>
             <el-descriptions-item label="UUID全局唯一标识" :span="2">
               {{ detailFormData.uuid }}
-            </el-descriptions-item>
-            <el-descriptions-item label="关联文档主表ID" :span="2">
-              {{ detailFormData.doc_id }}
-            </el-descriptions-item>
-            <el-descriptions-item label="关联向量数据库中的唯一ID" :span="2">
-              {{ detailFormData.vector_id }}
-            </el-descriptions-item>
-            <el-descriptions-item label="切片原文内容" :span="2">
-              {{ detailFormData.content }}
-            </el-descriptions-item>
-            <el-descriptions-item label="所在文档原始页码" :span="2">
-              {{ detailFormData.page_number }}
-            </el-descriptions-item>
-            <el-descriptions-item label="在原文档中的切片顺序" :span="2">
-              {{ detailFormData.chunk_order }}
-            </el-descriptions-item>
-            <el-descriptions-item label="该切片的Token预估数量" :span="2">
-              {{ detailFormData.token_count }}
             </el-descriptions-item>
             <el-descriptions-item label="状态" :span="2">
               <el-tag :type="detailFormData.status == '0' ? 'success' : 'danger'">
@@ -391,23 +367,14 @@
       <!-- 新增、编辑表单 -->
       <template v-else>
         <el-form ref="dataFormRef" :model="formData" :rules="rules" label-suffix=":" label-width="auto" label-position="right">
-          <el-form-item label="关联文档主表ID" prop="doc_id" :required="false">
-            <el-input v-model="formData.doc_id" placeholder="请输入关联文档主表ID" />
+          <el-form-item label="用户ID" prop="user_id" :required="false">
+            <el-input v-model="formData.user_id" placeholder="请输入用户ID" />
           </el-form-item>
-          <el-form-item label="关联向量数据库中的唯一ID" prop="vector_id" :required="false">
-            <el-input v-model="formData.vector_id" placeholder="请输入关联向量数据库中的唯一ID" />
+          <el-form-item label="知识库ID" prop="lib_id" :required="false">
+            <el-input v-model="formData.lib_id" placeholder="请输入知识库ID" />
           </el-form-item>
-          <el-form-item label="切片原文内容" prop="content" :required="false">
-            <el-input v-model="formData.content" placeholder="请输入切片原文内容" />
-          </el-form-item>
-          <el-form-item label="所在文档原始页码" prop="page_number" :required="false">
-            <el-input v-model="formData.page_number" placeholder="请输入所在文档原始页码" />
-          </el-form-item>
-          <el-form-item label="在原文档中的切片顺序" prop="chunk_order" :required="false">
-            <el-input v-model="formData.chunk_order" placeholder="请输入在原文档中的切片顺序" />
-          </el-form-item>
-          <el-form-item label="该切片的Token预估数量" prop="token_count" :required="false">
-            <el-input v-model="formData.token_count" placeholder="请输入该切片的Token预估数量" />
+          <el-form-item label="权限类型(read:只读 write:读写 admin:管理员)" prop="privilege_type" :required="false">
+            <el-input v-model="formData.privilege_type" placeholder="请输入权限类型(read:只读 write:读写 admin:管理员)" />
           </el-form-item>
           <el-form-item label="状态" prop="status" :required="true">
             <el-radio-group v-model="formData.status">
@@ -460,7 +427,7 @@
 
 <script setup lang="ts">
 defineOptions({
-  name: "SysDocumentChunks",
+  name: "SysUserLibraries",
   inheritAttrs: false,
 });
 
@@ -474,7 +441,7 @@ import DatePicker from "@/components/DatePicker/index.vue";
 import type { IContentConfig } from "@/components/CURD/types";
 import ImportModal from "@/components/CURD/ImportModal.vue";
 import ExportModal from "@/components/CURD/ExportModal.vue";
-import SysDocumentChunksAPI, { SysDocumentChunksPageQuery, SysDocumentChunksTable, SysDocumentChunksForm } from '@/api/module_gencode/sys_document_chunks'
+import SysUserLibrariesAPI, { SysUserLibrariesPageQuery, SysUserLibrariesTable, SysUserLibrariesForm } from '@/api/module_gencode/sys_user_libraries'
 
 const visible = ref(true);
 const isExpand = ref(false);
@@ -483,7 +450,7 @@ const queryFormRef = ref();
 const dataFormRef = ref();
 const total = ref(0);
 const selectIds = ref<number[]>([]);
-const selectionRows = ref<SysDocumentChunksTable[]>([]);
+const selectionRows = ref<SysUserLibrariesTable[]>([]);
 const loading = ref(false);
 
 // 字典仓库与需要加载的字典类型
@@ -492,19 +459,16 @@ const dictTypes: any = [
 ]
 
 // 分页表单
-const pageTableData = ref<SysDocumentChunksTable[]>([]);
+const pageTableData = ref<SysUserLibrariesTable[]>([]);
 
 // 表格列配置
 const tableColumns = ref([
   { prop: "selection", label: "选择框", show: true },
   { prop: "index", label: "序号", show: true },
-  { prop: 'doc_id', label: '关联文档主表ID', show: true },
-  { prop: 'vector_id', label: '关联向量数据库中的唯一ID', show: true },
-  { prop: 'content', label: '切片原文内容', show: true },
-  { prop: 'page_number', label: '所在文档原始页码', show: true },
-  { prop: 'chunk_order', label: '在原文档中的切片顺序', show: true },
-  { prop: 'token_count', label: '该切片的Token预估数量', show: true },
-  { prop: 'status', label: '状态(0:启用 1:禁用)', show: true },
+  { prop: 'user_id', label: '用户ID', show: true },
+  { prop: 'lib_id', label: '知识库ID', show: true },
+  { prop: 'privilege_type', label: '权限类型(read:只读 write:读写 admin:管理员)', show: true },
+  { prop: 'status', label: '是否启用(0:启用 1:禁用)', show: true },
   { prop: 'description', label: '备注/描述', show: true },
   { prop: 'created_time', label: '创建时间', show: true },
   { prop: 'updated_time', label: '更新时间', show: true },
@@ -515,13 +479,10 @@ const tableColumns = ref([
 
 // 导出列（不含选择/序号/操作）
 const exportColumns = [
-  { prop: 'doc_id', label: '关联文档主表ID' },
-  { prop: 'vector_id', label: '关联向量数据库中的唯一ID' },
-  { prop: 'content', label: '切片原文内容' },
-  { prop: 'page_number', label: '所在文档原始页码' },
-  { prop: 'chunk_order', label: '在原文档中的切片顺序' },
-  { prop: 'token_count', label: '该切片的Token预估数量' },
-  { prop: 'status', label: '状态(0:启用 1:禁用)' },
+  { prop: 'user_id', label: '用户ID' },
+  { prop: 'lib_id', label: '知识库ID' },
+  { prop: 'privilege_type', label: '权限类型(read:只读 write:读写 admin:管理员)' },
+  { prop: 'status', label: '是否启用(0:启用 1:禁用)' },
   { prop: 'description', label: '备注/描述' },
   { prop: 'created_time', label: '创建时间' },
   { prop: 'updated_time', label: '更新时间' },
@@ -531,9 +492,9 @@ const exportColumns = [
 
 // 导入/导出配置
 const curdContentConfig = {
-  permPrefix: "module_gencode:sys_document_chunks",
+  permPrefix: "module_gencode:sys_user_libraries",
   cols: exportColumns as any,
-  importTemplate: () => SysDocumentChunksAPI.downloadTemplateSysDocumentChunks(),
+  importTemplate: () => SysUserLibrariesAPI.downloadTemplateSysUserLibraries(),
   exportsAction: async (params: any) => {
     const query: any = { ...params };
     query.status = '0';
@@ -541,7 +502,7 @@ const curdContentConfig = {
     query.page_size = 9999;
     const all: any[] = [];
     while (true) {
-      const res = await SysDocumentChunksAPI.listSysDocumentChunks(query);
+      const res = await SysUserLibrariesAPI.listSysUserLibraries(query);
       const items = res.data?.data?.items || [];
       const total = res.data?.data?.total || 0;
       all.push(...items);
@@ -553,7 +514,7 @@ const curdContentConfig = {
 } as unknown as IContentConfig;
 
 // 详情表单
-const detailFormData = ref<SysDocumentChunksTable>({});
+const detailFormData = ref<SysUserLibrariesTable>({});
 // 日期范围临时变量
 const createdDateRange = ref<[Date, Date] | []>([]);
 // 更新时间范围临时变量
@@ -580,15 +541,12 @@ function handleUpdatedDateRangeChange(range: [Date, Date]) {
 }
 
 // 分页查询参数
-const queryFormData = reactive<SysDocumentChunksPageQuery>({
+const queryFormData = reactive<SysUserLibrariesPageQuery>({
   page_no: 1,
   page_size: 10,
-  doc_id: undefined,
-  vector_id: undefined,
-  content: undefined,
-  page_number: undefined,
-  chunk_order: undefined,
-  token_count: undefined,
+  user_id: undefined,
+  lib_id: undefined,
+  privilege_type: undefined,
   status: undefined,
   created_time: undefined,
   updated_time: undefined,
@@ -598,14 +556,11 @@ const queryFormData = reactive<SysDocumentChunksPageQuery>({
 
 
 // 编辑表单
-const formData = reactive<SysDocumentChunksForm>({
+const formData = reactive<SysUserLibrariesForm>({
+  user_id: undefined,
+  lib_id: undefined,
+  privilege_type: undefined,
   id: undefined,
-  doc_id: undefined,
-  vector_id: undefined,
-  content: undefined,
-  page_number: undefined,
-  chunk_order: undefined,
-  token_count: undefined,
   status: undefined,
   description: undefined,
 });
@@ -619,32 +574,23 @@ const dialogVisible = reactive({
 
 // 表单验证规则
 const rules = reactive({
+  user_id: [
+    { required: true, message: '请输入用户ID', trigger: 'blur' },
+  ],
+  lib_id: [
+    { required: true, message: '请输入知识库ID', trigger: 'blur' },
+  ],
+  privilege_type: [
+    { required: false, message: '请输入权限类型(read:只读 write:读写 admin:管理员)', trigger: 'blur' },
+  ],
   id: [
     { required: false, message: '请输入主键ID', trigger: 'blur' },
   ],
   uuid: [
     { required: true, message: '请输入UUID全局唯一标识', trigger: 'blur' },
   ],
-  doc_id: [
-    { required: true, message: '请输入关联文档主表ID', trigger: 'blur' },
-  ],
-  vector_id: [
-    { required: false, message: '请输入关联向量数据库中的唯一ID', trigger: 'blur' },
-  ],
-  content: [
-    { required: true, message: '请输入切片原文内容', trigger: 'blur' },
-  ],
-  page_number: [
-    { required: false, message: '请输入所在文档原始页码', trigger: 'blur' },
-  ],
-  chunk_order: [
-    { required: false, message: '请输入在原文档中的切片顺序', trigger: 'blur' },
-  ],
-  token_count: [
-    { required: false, message: '请输入该切片的Token预估数量', trigger: 'blur' },
-  ],
   status: [
-    { required: true, message: '请输入状态(0:启用 1:禁用)', trigger: 'blur' },
+    { required: true, message: '请输入是否启用(0:启用 1:禁用)', trigger: 'blur' },
   ],
   description: [
     { required: false, message: '请输入备注/描述', trigger: 'blur' },
@@ -688,7 +634,7 @@ async function handleRefresh() {
 async function loadingData() {
   loading.value = true;
   try {
-    const response = await SysDocumentChunksAPI.listSysDocumentChunks(queryFormData);
+    const response = await SysUserLibrariesAPI.listSysUserLibraries(queryFormData);
     pageTableData.value = response.data.data.items;
     total.value = response.data.data.total;
   } catch (error: any) {
@@ -722,14 +668,11 @@ async function handleResetQuery() {
 }
 
 // 定义初始表单数据常量
-const initialFormData: SysDocumentChunksForm = {
+const initialFormData: SysUserLibrariesForm = {
+  user_id: undefined,
+  lib_id: undefined,
+  privilege_type: undefined,
   id: undefined,
-  doc_id: undefined,
-  vector_id: undefined,
-  content: undefined,
-  page_number: undefined,
-  chunk_order: undefined,
-  token_count: undefined,
   status: undefined,
   description: undefined,
 };
@@ -760,7 +703,7 @@ async function handleCloseDialog() {
 async function handleOpenDialog(type: "create" | "update" | "detail", id?: number) {
   dialogVisible.type = type;
   if (id) {
-    const response = await SysDocumentChunksAPI.detailSysDocumentChunks(id);
+    const response = await SysUserLibrariesAPI.detailSysUserLibraries(id);
     if (type === "detail") {
       dialogVisible.title = "详情";
       Object.assign(detailFormData.value, response.data.data);
@@ -769,14 +712,11 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
       Object.assign(formData, response.data.data);
     }
   } else {
-    dialogVisible.title = "新增SysDocumentChunks";
+    dialogVisible.title = "新增SysUserLibraries";
+    formData.user_id = undefined;
+    formData.lib_id = undefined;
+    formData.privilege_type = undefined;
     formData.id = undefined;
-    formData.doc_id = undefined;
-    formData.vector_id = undefined;
-    formData.content = undefined;
-    formData.page_number = undefined;
-    formData.chunk_order = undefined;
-    formData.token_count = undefined;
     formData.status = undefined;
     formData.description = undefined;
   }
@@ -793,7 +733,7 @@ async function handleSubmit() {
       const id = formData.id;
       if (id) {
         try {
-          await SysDocumentChunksAPI.updateSysDocumentChunks(id, { id, ...formData });
+          await SysUserLibrariesAPI.updateSysUserLibraries(id, { id, ...formData });
           dialogVisible.visible = false;
           resetForm();
           handleCloseDialog();
@@ -805,7 +745,7 @@ async function handleSubmit() {
         }
       } else {
         try {
-          await SysDocumentChunksAPI.createSysDocumentChunks(formData);
+          await SysUserLibrariesAPI.createSysUserLibraries(formData);
           dialogVisible.visible = false;
           resetForm();
           handleCloseDialog();
@@ -830,7 +770,7 @@ async function handleDelete(ids: number[]) {
     .then(async () => {
       try {
         loading.value = true;
-        await SysDocumentChunksAPI.deleteSysDocumentChunks(ids);
+        await SysUserLibrariesAPI.deleteSysUserLibraries(ids);
         handleResetQuery();
       } catch (error: any) {
         console.error(error);
@@ -854,7 +794,7 @@ async function handleMoreClick(status: string) {
       .then(async () => {
         try {
           loading.value = true;
-          await SysDocumentChunksAPI.batchSysDocumentChunks({ ids: selectIds.value, status });
+          await SysUserLibrariesAPI.batchSysUserLibraries({ ids: selectIds.value, status });
           handleResetQuery();
         } catch (error: any) {
           console.error(error);
@@ -871,7 +811,7 @@ async function handleMoreClick(status: string) {
 // 处理上传
 const handleUpload = async (formData: FormData) => {
   try {
-    const response = await SysDocumentChunksAPI.importSysDocumentChunks(formData);
+    const response = await SysUserLibrariesAPI.importSysUserLibraries(formData);
     if (response.data.code === ResultEnum.SUCCESS) {
       ElMessage.success(`${response.data.msg}，${response.data.data}`);
       importDialogVisible.value = false;

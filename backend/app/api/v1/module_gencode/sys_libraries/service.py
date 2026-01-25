@@ -100,12 +100,7 @@ class SysLibrariesService:
             'updated_id': '更新人ID',
             'lib_name': '知识库名称',
             'collection_name': '向量数据库的集合名称',
-            'lib_type': '知识库类型(vector:向量库 text:文本库)',
             'embedding_model': '嵌入模型名称',
-            'chunk_size': '文档切片大小',
-            'chunk_overlap': '文档切片重叠大小',
-            'similarity_threshold': '相似度阈值',
-            'max_chunks': '最大切片数量',
             'updated_id': '更新者ID',
         }
 
@@ -138,12 +133,7 @@ class SysLibrariesService:
             '更新人ID': 'updated_id',
             '知识库名称': 'lib_name',
             '向量数据库的集合名称': 'collection_name',
-            '知识库类型(vector:向量库 text:文本库)': 'lib_type',
             '嵌入模型名称': 'embedding_model',
-            '文档切片大小': 'chunk_size',
-            '文档切片重叠大小': 'chunk_overlap',
-            '相似度阈值': 'similarity_threshold',
-            '最大切片数量': 'max_chunks',
         }
 
         try:
@@ -180,12 +170,7 @@ class SysLibrariesService:
                         "updated_id": row['updated_id'],
                         "lib_name": row['lib_name'],
                         "collection_name": row['collection_name'],
-                        "lib_type": row['lib_type'],
                         "embedding_model": row['embedding_model'],
-                        "chunk_size": row['chunk_size'],
-                        "chunk_overlap": row['chunk_overlap'],
-                        "similarity_threshold": row['similarity_threshold'],
-                        "max_chunks": row['max_chunks'],
                     }
                     # 使用CreateSchema做校验后入库
                     create_schema = SysLibrariesCreateSchema.model_validate(data)
@@ -221,12 +206,7 @@ class SysLibrariesService:
             '更新人ID',
             '知识库名称',
             '向量数据库的集合名称',
-            '知识库类型(vector:向量库 text:文本库)',
             '嵌入模型名称',
-            '文档切片大小',
-            '文档切片重叠大小',
-            '相似度阈值',
-            '最大切片数量',
         ]
         selector_header_list = []
         option_list = []

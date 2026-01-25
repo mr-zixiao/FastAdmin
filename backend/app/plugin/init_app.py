@@ -134,7 +134,7 @@ def register_routers(app: FastAPI) -> None:
     # 手动注册WebSocket路由，不使用速率限制器
     app.include_router(router=WS_AI, dependencies=[Depends(WebSocketRateLimiter(times=1, seconds=5))])
     # 先将动态路由注册到应用，使用速率限制器
-    app.include_router(router=router, dependencies=[Depends(RateLimiter(times=5, seconds=10))])
+    app.include_router(router=router, dependencies=[Depends(RateLimiter(times=10, seconds=1))])
 
 def register_files(app: FastAPI) -> None:
     """

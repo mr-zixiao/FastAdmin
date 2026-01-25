@@ -27,6 +27,7 @@ import {
   fetchCaptcha,
   login,
 } from "@/lib/api/auth";
+import { getCurrentUserInfo } from "@/lib/api/user";
 import { Auth } from "@/lib/auth";
 
 const loginSchema = z.object({
@@ -93,11 +94,20 @@ export default function LoginPage() {
       try {
         const result: LoginResult = await login(payload);
 
-        // 使用 Auth 工具类存储 token（根据“记住我”状态自动选择存储位置）
+        // 使用 Auth 工具类存储 token（根据"记住我"状态自动选择存储位置）
         Auth.setTokens(result.access_token, result.refresh_token, values.remember);
 
+        // 获取用户信息
+        try {
+          const userInfo = await getCurrentUserInfo();
+          Auth.setUserInfo(userInfo, values.remember);
+        } catch (e) {
+          // 获取用户信息失败不影响登录流程，但记录错误
+          console.error("获取用户信息失败:", e);
+        }
+
         // 登录成功，跳转首页
-        router.push("/");
+        router.push("/dashboard");
       } catch (e) {
         setError(e instanceof Error ? e.message : "登录失败，请稍后重试");
         // 刷新验证码
@@ -115,13 +125,13 @@ export default function LoginPage() {
       : "";
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-slate-900 via-slate-950 to-slate-900 px-4">
-      <Card className="w-full max-w-md border-slate-800 bg-slate-900/60 text-slate-50 shadow-xl shadow-slate-900/40 backdrop-blur">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-100 px-4 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900">
+      <Card className="w-full max-w-md border-border bg-card text-card-foreground shadow-xl backdrop-blur">
         <CardHeader className="space-y-2 text-center">
           <CardTitle className="text-2xl font-semibold tracking-tight">
             欢迎登录 MindVault
           </CardTitle>
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-muted-foreground">
             请输入账号、密码与验证码进入系统
           </p>
         </CardHeader>
@@ -186,10 +196,10 @@ export default function LoginPage() {
                         <button
                           type="button"
                           onClick={() => void loadCaptcha()}
-                          className="group relative flex h-9 min-w-[96px] items-center justify-center overflow-hidden rounded-md border border-slate-700 bg-slate-900/70 transition hover:border-sky-500/70 hover:bg-slate-900"
+                          className="group relative flex h-9 min-w-[96px] items-center justify-center overflow-hidden rounded-md border border-border bg-muted transition hover:border-primary/70 hover:bg-muted/80"
                         >
                           {loadingCaptcha ? (
-                            <div className="flex h-full w-full items-center justify-center gap-2 text-xs text-slate-300">
+                            <div className="flex h-full w-full items-center justify-center gap-2 text-xs text-muted-foreground">
                               <Spinner className="h-4 w-4" />
                               刷新中...
                             </div>
@@ -201,13 +211,13 @@ export default function LoginPage() {
                               className="h-9 w-auto max-w-[160px] object-contain"
                             />
                           ) : (
-                            <span className="text-xs text-slate-300">
+                            <span className="text-xs text-muted-foreground">
                               点击获取验证码
                             </span>
                           )}
-                          <div className="pointer-events-none absolute inset-0 bg-linear-to-tr from-sky-500/0 via-sky-500/10 to-sky-500/0 opacity-0 blur-md transition group-hover:opacity-100" />
+                          <div className="pointer-events-none absolute inset-0 bg-gradient-to-tr from-primary/0 via-primary/10 to-primary/0 opacity-0 blur-md transition group-hover:opacity-100" />
                         </button>
-                        <span className="text-[11px] text-slate-400">
+                        <span className="text-[11px] text-muted-foreground">
                           看不清？点击图片刷新
                         </span>
                       </div>
@@ -230,7 +240,7 @@ export default function LoginPage() {
                         }
                       />
                     </FormControl>
-                    <FormLabel className="font-normal text-slate-300">
+                    <FormLabel className="font-normal">
                       记住我
                     </FormLabel>
                   </FormItem>
@@ -238,14 +248,14 @@ export default function LoginPage() {
               />
 
               {error && (
-                <div className="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-200">
+                <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
                   {error}
                 </div>
               )}
 
               <Button
                 type="submit"
-                className="inline-flex w-full items-center justify-center gap-2 bg-sky-500 text-slate-950 hover:bg-sky-400"
+                className="inline-flex w-full items-center justify-center gap-2"
                 disabled={isPending}
               >
                 {isPending && <Spinner className="h-4 w-4" />}

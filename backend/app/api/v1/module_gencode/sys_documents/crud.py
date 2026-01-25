@@ -9,7 +9,7 @@ from .schema import SysDocumentsCreateSchema, SysDocumentsUpdateSchema, SysDocum
 
 
 class SysDocumentsCRUD(CRUDBase[SysDocumentsModel, SysDocumentsCreateSchema, SysDocumentsUpdateSchema]):
-    """文档资产管理数据层"""
+    """文档管理数据层"""
 
     def __init__(self, auth: AuthSchema) -> None:
         """
@@ -99,7 +99,7 @@ class SysDocumentsCRUD(CRUDBase[SysDocumentsModel, SysDocumentsCreateSchema, Sys
     
     async def page_sys_documents_crud(self, offset: int, limit: int, order_by: list[dict] | None = None, search: dict | None = None, preload: list | None = None) -> dict:
         """
-        分页查询
+        分页查询（返回原始对象，用于后续处理文件信息）
         
         参数:
         - offset (int): 偏移量
@@ -109,15 +109,48 @@ class SysDocumentsCRUD(CRUDBase[SysDocumentsModel, SysDocumentsCreateSchema, Sys
         - preload (list | None): 预加载关系，未提供时使用模型默认项
         
         返回:
-        - Dict: 分页数据
+        - Dict: 分页数据（包含原始对象列表）
         """
-        order_by_list = order_by or [{'id': 'asc'}]
-        search_dict = search or {}
-        return await self.page(
-            offset=offset,
-            limit=limit,
-            order_by=order_by_list,
-            search=search_dict,
-            out_schema=SysDocumentsOutSchema,
-            preload=preload
-        )
+        from sqlalchemy import func, select
+        from sqlalchemy import inspect as sa_inspect
+        from app.core.exceptions import CustomException
+        
+        try:
+            conditions = await self._CRUDBase__build_conditions(**search) if search else []
+            order = order_by or [{'id': 'asc'}]
+            sql = select(self.model).where(*conditions).order_by(*self._CRUDBase__order_by(order))
+            # 应用预加载选项
+            for opt in self._CRUDBase__loader_options(preload):
+                sql = sql.options(opt)
+            sql = await self._CRUDBase__filter_permissions(sql)
+
+            # 优化count查询：使用主键计数而非全表扫描
+            mapper = sa_inspect(self.model)
+            pk_cols = list(getattr(mapper, "primary_key", []))
+            if pk_cols:
+                # 使用主键的第一列进行计数（主键必定非NULL，性能更好）
+                count_sql = select(func.count(pk_cols[0])).select_from(self.model)
+            else:
+                # 降级方案：使用count(*)
+                count_sql = select(func.count()).select_from(self.model)
+            
+            if conditions:
+                count_sql = count_sql.where(*conditions)
+            count_sql = await self._CRUDBase__filter_permissions(count_sql)
+            
+            total_result = await self.auth.db.execute(count_sql)
+            total = total_result.scalar() or 0
+
+            result = await self.auth.db.execute(sql.offset(offset).limit(limit))
+            objs = result.scalars().all()
+
+            return {
+                "page_no": offset // limit + 1 if limit else 1,
+                "page_size": limit if limit else 10,
+                "total": total,
+                "has_next": offset + limit < total,
+                "items": objs,  # 返回原始对象列表
+                "_raw_items": True  # 标记为原始对象，需要在service层处理
+            }
+        except Exception as e:
+            raise CustomException(msg=f"分页查询失败: {str(e)}")

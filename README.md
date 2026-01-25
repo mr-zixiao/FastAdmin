@@ -4,7 +4,11 @@
      </p>
      <h1>FastApiAdmin <sup style="background-color: #28a745; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.4em; vertical-align: super; margin-left: 5px;">v2.0.0</h1>
      <h3>智枢 (OmniHub) 企业级全域知识智能中枢平台</h3>
-     <p>如果你喜欢这个项目，给个 ⭐️ 支持一下吧！</p>
+     <p>
+     站在用户的角度，重新调整frontend\src\views\module_gencode\sys_documents\index.vue页面：
+1、搜索区域仅保留2-3个常用的即可。
+2、重新调整表单，表格的标题，要通俗易懂。
+     </p>
      <p align="center">
           <a href="https://gitee.com/tao__tao/FastapiAdmin.git" target="_blank">
                <img src="https://gitee.com/tao__tao/FastapiAdmin/badge/star.svg?theme=dark" alt="Gitee Stars">

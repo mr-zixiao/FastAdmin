@@ -1,11 +1,11 @@
 import request from "@/utils/request";
 
-const API_PATH = "/gencode/sys_dept_libraries";
+const API_PATH = "/gencode/sys_user_libraries";
 
-const SysDeptLibrariesAPI = {
+const SysUserLibrariesAPI = {
   // 列表查询
-  listSysDeptLibraries(query: SysDeptLibrariesPageQuery) {
-    return request<ApiResponse<PageResult<SysDeptLibrariesTable[]>>>({
+  listSysUserLibraries(query: SysUserLibrariesPageQuery) {
+    return request<ApiResponse<PageResult<SysUserLibrariesTable[]>>>({
       url: `${API_PATH}/list`,
       method: "get",
       params: query,
@@ -13,15 +13,15 @@ const SysDeptLibrariesAPI = {
   },
 
   // 详情查询
-  detailSysDeptLibraries(id: number) {
-    return request<ApiResponse<SysDeptLibrariesTable>>({
+  detailSysUserLibraries(id: number) {
+    return request<ApiResponse<SysUserLibrariesTable>>({
       url: `${API_PATH}/detail/${id}`,
       method: "get",
     });
   },
 
   // 新增
-  createSysDeptLibraries(body: SysDeptLibrariesForm) {
+  createSysUserLibraries(body: SysUserLibrariesForm) {
     return request<ApiResponse>({
       url: `${API_PATH}/create`,
       method: "post",
@@ -30,7 +30,7 @@ const SysDeptLibrariesAPI = {
   },
 
   // 修改（带主键）
-  updateSysDeptLibraries(id: number, body: SysDeptLibrariesForm) {
+  updateSysUserLibraries(id: number, body: SysUserLibrariesForm) {
     return request<ApiResponse>({
       url: `${API_PATH}/update/${id}`,
       method: "put",
@@ -39,7 +39,7 @@ const SysDeptLibrariesAPI = {
   },
 
   // 删除（支持批量）
-  deleteSysDeptLibraries(ids: number[]) {
+  deleteSysUserLibraries(ids: number[]) {
     return request<ApiResponse>({
       url: `${API_PATH}/delete`,
       method: "delete",
@@ -48,7 +48,7 @@ const SysDeptLibrariesAPI = {
   },
 
   // 批量启用/停用
-  batchSysDeptLibraries(body: BatchType) {
+  batchSysUserLibraries(body: BatchType) {
     return request<ApiResponse>({
       url: `${API_PATH}/available/setting`,
       method: "patch",
@@ -57,7 +57,7 @@ const SysDeptLibrariesAPI = {
   },
 
   // 导出
-  exportSysDeptLibraries(query: SysDeptLibrariesPageQuery) {
+  exportSysUserLibraries(query: SysUserLibrariesPageQuery) {
     return request<Blob>({
       url: `${API_PATH}/export`,
       method: "post",
@@ -67,7 +67,7 @@ const SysDeptLibrariesAPI = {
   },
 
   // 下载导入模板
-  downloadTemplateSysDeptLibraries() {
+  downloadTemplateSysUserLibraries() {
     return request<Blob>({
       url: `${API_PATH}/download/template`,
       method: "post",
@@ -76,7 +76,7 @@ const SysDeptLibrariesAPI = {
   },
 
   // 导入
-  importSysDeptLibraries(body: FormData) {
+  importSysUserLibraries(body: FormData) {
     return request<ApiResponse>({
       url: `${API_PATH}/import`,
       method: "post",
@@ -84,18 +84,26 @@ const SysDeptLibrariesAPI = {
       headers: { "Content-Type": "multipart/form-data" },
     });
   },
+
+  // 批量关联用户与知识库
+  batchAssociateSysUserLibraries(body: SysUserLibrariesBatchAssociateForm) {
+    return request<ApiResponse>({
+      url: `${API_PATH}/batch/associate`,
+      method: "post",
+      data: body,
+    });
+  },
 };
 
-export default SysDeptLibrariesAPI;
+export default SysUserLibrariesAPI;
 
 // ------------------------------
 // TS 类型声明
 // ------------------------------
 
 // 列表查询参数
-export interface SysDeptLibrariesPageQuery extends PageQuery {
-  dept_id?: string;
-  dept_code?: string;
+export interface SysUserLibrariesPageQuery extends PageQuery {
+  user_id?: string;
   lib_id?: string;
   privilege_type?: string;
   status?: string;
@@ -106,9 +114,8 @@ export interface SysDeptLibrariesPageQuery extends PageQuery {
 }
 
 // 列表展示项
-export interface SysDeptLibrariesTable extends BaseType{
-  dept_id?: string;
-  dept_code?: string;
+export interface SysUserLibrariesTable extends BaseType{
+  user_id?: string;
   lib_id?: string;
   privilege_type?: string;
   created_id?: string;
@@ -118,9 +125,17 @@ export interface SysDeptLibrariesTable extends BaseType{
 }
 
 // 新增/修改/详情表单参数
-export interface SysDeptLibrariesForm extends BaseFormType{
-  dept_id?: string;
-  dept_code?: string;
+export interface SysUserLibrariesForm extends BaseFormType{
+  user_id?: string;
   lib_id?: string;
   privilege_type?: string;
+}
+
+// 批量关联表单参数
+export interface SysUserLibrariesBatchAssociateForm {
+  user_ids: number[]; // 用户ID列表
+  lib_id: number; // 知识库ID
+  privilege_type: string; // 权限类型(使用字典sys_lib_privilege_type)
+  status?: string; // 状态
+  description?: string; // 备注/描述
 }

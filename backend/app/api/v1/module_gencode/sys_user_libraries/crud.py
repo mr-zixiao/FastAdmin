@@ -4,12 +4,12 @@ from typing import Sequence
 
 from app.core.base_crud import CRUDBase
 from app.api.v1.module_system.auth.schema import AuthSchema
-from .model import SysDocumentChunksModel
-from .schema import SysDocumentChunksCreateSchema, SysDocumentChunksUpdateSchema, SysDocumentChunksOutSchema
+from .model import SysUserLibrariesModel
+from .schema import SysUserLibrariesCreateSchema, SysUserLibrariesUpdateSchema, SysUserLibrariesOutSchema
 
 
-class SysDocumentChunksCRUD(CRUDBase[SysDocumentChunksModel, SysDocumentChunksCreateSchema, SysDocumentChunksUpdateSchema]):
-    """文档切片明细数据层"""
+class SysUserLibrariesCRUD(CRUDBase[SysUserLibrariesModel, SysUserLibrariesCreateSchema, SysUserLibrariesUpdateSchema]):
+    """用户与知识库关联数据层"""
 
     def __init__(self, auth: AuthSchema) -> None:
         """
@@ -18,9 +18,9 @@ class SysDocumentChunksCRUD(CRUDBase[SysDocumentChunksModel, SysDocumentChunksCr
         参数:
         - auth (AuthSchema): 认证信息模型
         """
-        super().__init__(model=SysDocumentChunksModel, auth=auth)
+        super().__init__(model=SysUserLibrariesModel, auth=auth)
 
-    async def get_by_id_sys_document_chunks_crud(self, id: int, preload: list | None = None) -> SysDocumentChunksModel | None:
+    async def get_by_id_sys_user_libraries_crud(self, id: int, preload: list | None = None) -> SysUserLibrariesModel | None:
         """
         详情
         
@@ -29,11 +29,11 @@ class SysDocumentChunksCRUD(CRUDBase[SysDocumentChunksModel, SysDocumentChunksCr
         - preload (list | None): 预加载关系，未提供时使用模型默认项
         
         返回:
-        - SysDocumentChunksModel | None: 模型实例或None
+        - SysUserLibrariesModel | None: 模型实例或None
         """
         return await self.get(id=id, preload=preload)
     
-    async def list_sys_document_chunks_crud(self, search: dict | None = None, order_by: list[dict] | None = None, preload: list | None = None) -> Sequence[SysDocumentChunksModel]:
+    async def list_sys_user_libraries_crud(self, search: dict | None = None, order_by: list[dict] | None = None, preload: list | None = None) -> Sequence[SysUserLibrariesModel]:
         """
         列表查询
         
@@ -43,36 +43,36 @@ class SysDocumentChunksCRUD(CRUDBase[SysDocumentChunksModel, SysDocumentChunksCr
         - preload (list | None): 预加载关系，未提供时使用模型默认项
         
         返回:
-        - Sequence[SysDocumentChunksModel]: 模型实例序列
+        - Sequence[SysUserLibrariesModel]: 模型实例序列
         """
         return await self.list(search=search, order_by=order_by, preload=preload)
     
-    async def create_sys_document_chunks_crud(self, data: SysDocumentChunksCreateSchema) -> SysDocumentChunksModel | None:
+    async def create_sys_user_libraries_crud(self, data: SysUserLibrariesCreateSchema) -> SysUserLibrariesModel | None:
         """
         创建
         
         参数:
-        - data (SysDocumentChunksCreateSchema): 创建模型
+        - data (SysUserLibrariesCreateSchema): 创建模型
         
         返回:
-        - SysDocumentChunksModel | None: 模型实例或None
+        - SysUserLibrariesModel | None: 模型实例或None
         """
         return await self.create(data=data)
     
-    async def update_sys_document_chunks_crud(self, id: int, data: SysDocumentChunksUpdateSchema) -> SysDocumentChunksModel | None:
+    async def update_sys_user_libraries_crud(self, id: int, data: SysUserLibrariesUpdateSchema) -> SysUserLibrariesModel | None:
         """
         更新
         
         参数:
         - id (int): 对象ID
-        - data (SysDocumentChunksUpdateSchema): 更新模型
+        - data (SysUserLibrariesUpdateSchema): 更新模型
         
         返回:
-        - SysDocumentChunksModel | None: 模型实例或None
+        - SysUserLibrariesModel | None: 模型实例或None
         """
         return await self.update(id=id, data=data)
     
-    async def delete_sys_document_chunks_crud(self, ids: list[int]) -> None:
+    async def delete_sys_user_libraries_crud(self, ids: list[int]) -> None:
         """
         批量删除
         
@@ -84,7 +84,7 @@ class SysDocumentChunksCRUD(CRUDBase[SysDocumentChunksModel, SysDocumentChunksCr
         """
         return await self.delete(ids=ids)
     
-    async def set_available_sys_document_chunks_crud(self, ids: list[int], status: str) -> None:
+    async def set_available_sys_user_libraries_crud(self, ids: list[int], status: str) -> None:
         """
         批量设置可用状态
         
@@ -97,7 +97,7 @@ class SysDocumentChunksCRUD(CRUDBase[SysDocumentChunksModel, SysDocumentChunksCr
         """
         return await self.set(ids=ids, status=status)
     
-    async def page_sys_document_chunks_crud(self, offset: int, limit: int, order_by: list[dict] | None = None, search: dict | None = None, preload: list | None = None) -> dict:
+    async def page_sys_user_libraries_crud(self, offset: int, limit: int, order_by: list[dict] | None = None, search: dict | None = None, preload: list | None = None) -> dict:
         """
         分页查询
         
@@ -118,6 +118,6 @@ class SysDocumentChunksCRUD(CRUDBase[SysDocumentChunksModel, SysDocumentChunksCr
             limit=limit,
             order_by=order_by_list,
             search=search_dict,
-            out_schema=SysDocumentChunksOutSchema,
+            out_schema=SysUserLibrariesOutSchema,
             preload=preload
         )

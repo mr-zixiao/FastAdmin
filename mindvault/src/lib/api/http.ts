@@ -16,17 +16,25 @@ export async function httpRequest<TData>(
   init?: RequestInit,
 ): Promise<TData> {
   const isFormData = init?.body instanceof FormData;
+  const accessToken = Auth.getAccessToken();
+
+  // 构建请求头
+  const headers: HeadersInit = {
+    ...(init?.headers ?? {}),
+  };
+
+  // 如果 Authorization 未设置且有 token，则添加
+  if (!headers.Authorization && accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  // 如果不是 FormData，添加 Content-Type
+  if (!isFormData && !headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
+  }
 
   const res = await fetch(`${API_PREFIX}${path}`, {
-    headers: isFormData
-      ? {
-          // 对于 FormData，不显式设置 Content-Type，交给浏览器自动生成带 boundary 的 header
-          ...(init?.headers ?? {}),
-        }
-      : {
-          "Content-Type": "application/json",
-          ...(init?.headers ?? {}),
-        },
+    headers,
     ...init,
     cache: "no-store",
   });
@@ -39,6 +47,15 @@ export async function httpRequest<TData>(
   const json = (await res.json()) as ApiResponse<TData>;
 
   // 基于统一的返回码进行差异化处理（不直接 throw，采用跳转或弹窗提示）
+  // 如果返回 code 为 10401（令牌过期），重定向到登录页
+  if (json.code === 10401 || json.code === ResultEnum.TOKEN_EXPIRED) {
+    if (typeof window !== "undefined") {
+      Auth.clearAuth();
+      window.location.href = "/login";
+    }
+    return Promise.reject<TData>();
+  }
+
   switch (json.code) {
     case ResultEnum.SUCCESS: {
       return json.data;
@@ -85,5 +102,43 @@ export async function httpRequest<TData>(
       return Promise.reject<TData>(json);
     }
   }
+}
+
+/**
+ * 处理 Blob 响应的请求（用于文件下载等）
+ */
+export async function httpRequestBlob(
+  path: string,
+  init?: RequestInit,
+): Promise<Blob> {
+  const isFormData = init?.body instanceof FormData;
+  const accessToken = Auth.getAccessToken();
+
+  // 构建请求头
+  const headers: HeadersInit = {
+    ...(init?.headers ?? {}),
+  };
+
+  // 如果 Authorization 未设置且有 token，则添加
+  if (!headers.Authorization && accessToken) {
+    headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  // 如果不是 FormData，添加 Content-Type
+  if (!isFormData && !headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  const res = await fetch(`${API_PREFIX}${path}`, {
+    headers,
+    ...init,
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    return Promise.reject<Blob>(new Error(`网络错误：${res.status}`));
+  }
+
+  return res.blob();
 }
 

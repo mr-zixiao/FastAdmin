@@ -1,11 +1,11 @@
 import request from "@/utils/request";
 
-const API_PATH = "/gencode/sys_lib_permissions";
+const API_PATH = "/gencode/sys_file_upload";
 
-const SysLibPermissionsAPI = {
+const SysFileUploadAPI = {
   // 列表查询
-  listSysLibPermissions(query: SysLibPermissionsPageQuery) {
-    return request<ApiResponse<PageResult<SysLibPermissionsTable[]>>>({
+  listSysFileUpload(query: SysFileUploadPageQuery) {
+    return request<ApiResponse<PageResult<SysFileUploadTable[]>>>({
       url: `${API_PATH}/list`,
       method: "get",
       params: query,
@@ -13,15 +13,15 @@ const SysLibPermissionsAPI = {
   },
 
   // 详情查询
-  detailSysLibPermissions(id: number) {
-    return request<ApiResponse<SysLibPermissionsTable>>({
+  detailSysFileUpload(id: number) {
+    return request<ApiResponse<SysFileUploadTable>>({
       url: `${API_PATH}/detail/${id}`,
       method: "get",
     });
   },
 
   // 新增
-  createSysLibPermissions(body: SysLibPermissionsForm) {
+  createSysFileUpload(body: SysFileUploadForm) {
     return request<ApiResponse>({
       url: `${API_PATH}/create`,
       method: "post",
@@ -30,7 +30,7 @@ const SysLibPermissionsAPI = {
   },
 
   // 修改（带主键）
-  updateSysLibPermissions(id: number, body: SysLibPermissionsForm) {
+  updateSysFileUpload(id: number, body: SysFileUploadForm) {
     return request<ApiResponse>({
       url: `${API_PATH}/update/${id}`,
       method: "put",
@@ -39,7 +39,7 @@ const SysLibPermissionsAPI = {
   },
 
   // 删除（支持批量）
-  deleteSysLibPermissions(ids: number[]) {
+  deleteSysFileUpload(ids: number[]) {
     return request<ApiResponse>({
       url: `${API_PATH}/delete`,
       method: "delete",
@@ -48,7 +48,7 @@ const SysLibPermissionsAPI = {
   },
 
   // 批量启用/停用
-  batchSysLibPermissions(body: BatchType) {
+  batchSysFileUpload(body: BatchType) {
     return request<ApiResponse>({
       url: `${API_PATH}/available/setting`,
       method: "patch",
@@ -57,7 +57,7 @@ const SysLibPermissionsAPI = {
   },
 
   // 导出
-  exportSysLibPermissions(query: SysLibPermissionsPageQuery) {
+  exportSysFileUpload(query: SysFileUploadPageQuery) {
     return request<Blob>({
       url: `${API_PATH}/export`,
       method: "post",
@@ -67,7 +67,7 @@ const SysLibPermissionsAPI = {
   },
 
   // 下载导入模板
-  downloadTemplateSysLibPermissions() {
+  downloadTemplateSysFileUpload() {
     return request<Blob>({
       url: `${API_PATH}/download/template`,
       method: "post",
@@ -76,7 +76,7 @@ const SysLibPermissionsAPI = {
   },
 
   // 导入
-  importSysLibPermissions(body: FormData) {
+  importSysFileUpload(body: FormData) {
     return request<ApiResponse>({
       url: `${API_PATH}/import`,
       method: "post",
@@ -85,28 +85,44 @@ const SysLibPermissionsAPI = {
     });
   },
 
-  // 批量关联知识库权限
-  batchAssociateSysLibPermissions(body: SysLibPermissionsBatchAssociateForm) {
-    return request<ApiResponse>({
-      url: `${API_PATH}/batch/associate`,
+  // 上传文件
+  uploadFile(file: File, description?: string) {
+    const formData = new FormData();
+    formData.append("file", file);
+    if (description) {
+      formData.append("description", description);
+    }
+    return request<ApiResponse<SysFileUploadTable>>({
+      url: `${API_PATH}/upload/file`,
       method: "post",
-      data: body,
+      data: formData,
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
+
+  // 访问文件（通过ID）
+  getFile(id: number) {
+    return request<Blob>({
+      url: `${API_PATH}/file/${id}`,
+      method: "get",
+      responseType: "blob",
     });
   },
 };
 
-export default SysLibPermissionsAPI;
+export default SysFileUploadAPI;
 
 // ------------------------------
 // TS 类型声明
 // ------------------------------
 
 // 列表查询参数
-export interface SysLibPermissionsPageQuery extends PageQuery {
-  target_type?: string;
-  target_id?: string;
-  lib_id?: string;
-  privilege_type?: string;
+export interface SysFileUploadPageQuery extends PageQuery {
+  origin_name?: string;
+  file_name?: string;
+  file_path?: string;
+  file_size?: string;
+  file_type?: string;
   status?: string;
   created_id?: number;
   updated_id?: number;
@@ -115,11 +131,12 @@ export interface SysLibPermissionsPageQuery extends PageQuery {
 }
 
 // 列表展示项
-export interface SysLibPermissionsTable extends BaseType{
-  target_type?: string;
-  target_id?: string;
-  lib_id?: string;
-  privilege_type?: string;
+export interface SysFileUploadTable extends BaseType{
+  origin_name?: string;
+  file_name?: string;
+  file_path?: string;
+  file_size?: string;
+  file_type?: string;
   created_id?: string;
   updated_id?: string;
   created_by?: CommonType;
@@ -127,19 +144,10 @@ export interface SysLibPermissionsTable extends BaseType{
 }
 
 // 新增/修改/详情表单参数
-export interface SysLibPermissionsForm extends BaseFormType{
-  target_type?: string;
-  target_id?: string;
-  lib_id?: string;
-  privilege_type?: string;
-}
-
-// 批量关联表单参数
-export interface SysLibPermissionsBatchAssociateForm {
-  target_type: string;
-  target_ids: string; // 逗号分隔的ID字符串
-  lib_id: number;
-  privilege_type: string;
-  status?: string;
-  description?: string;
+export interface SysFileUploadForm extends BaseFormType{
+  origin_name?: string;
+  file_name?: string;
+  file_path?: string;
+  file_size?: string;
+  file_type?: string;
 }

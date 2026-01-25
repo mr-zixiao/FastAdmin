@@ -14,12 +14,7 @@ class SysLibrariesCreateSchema(BaseModel):
     description: str | None = Field(default=None, max_length=255, description='备注/描述')
     lib_name: str = Field(default=..., description='知识库名称')
     collection_name: str = Field(default=..., description='向量数据库的集合名称')
-    lib_type: str = Field(default=..., description='知识库类型(vector:向量库 text:文本库)')
     embedding_model: str = Field(default=..., description='嵌入模型名称')
-    chunk_size: int = Field(default=..., description='文档切片大小')
-    chunk_overlap: int = Field(default=..., description='文档切片重叠大小')
-    similarity_threshold: int = Field(default=..., description='相似度阈值')
-    max_chunks: int = Field(default=..., description='最大切片数量')
 
 
 class SysLibrariesUpdateSchema(SysLibrariesCreateSchema):
@@ -44,7 +39,6 @@ class SysLibrariesQueryParam:
         status: str | None = Query(None, description="是否启用(0:启用 1:禁用)"),
         lib_name: str | None = Query(None, description="知识库名称"),
         collection_name: str | None = Query(None, description="向量数据库的集合名称"),
-        lib_type: str | None = Query(None, description="知识库类型(vector:向量库 text:文本库)"),
         embedding_model: str | None = Query(None, description="嵌入模型名称"),
         created_id: int | None = Query(None, description="创建人ID"),
         updated_id: int | None = Query(None, description="更新人ID"),
@@ -61,8 +55,6 @@ class SysLibrariesQueryParam:
         self.lib_name = ("like", lib_name)
         # 模糊查询字段
         self.collection_name = ("like", collection_name)
-        # 模糊查询字段
-        self.lib_type = ("like", lib_type)
         # 模糊查询字段
         self.embedding_model = ("like", embedding_model)
         # 时间范围查询

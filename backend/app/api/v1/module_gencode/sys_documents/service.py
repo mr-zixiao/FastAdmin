@@ -11,27 +11,43 @@ from app.core.logger import log
 from app.api.v1.module_system.auth.schema import AuthSchema
 from .schema import SysDocumentsCreateSchema, SysDocumentsUpdateSchema, SysDocumentsOutSchema, SysDocumentsQueryParam
 from .crud import SysDocumentsCRUD
+from app.api.v1.module_gencode.sys_file_upload.schema import SysFileUploadOutSchema
 
 
 class SysDocumentsService:
     """
-    文档资产管理服务层
+    文档管理服务层
     """
     
     @classmethod
     async def detail_sys_documents_service(cls, auth: AuthSchema, id: int) -> dict:
         """详情"""
-        obj = await SysDocumentsCRUD(auth).get_by_id_sys_documents_crud(id=id)
+        obj = await SysDocumentsCRUD(auth).get_by_id_sys_documents_crud(id=id, preload=["file_upload"])
         if not obj:
             raise CustomException(msg="该数据不存在")
-        return SysDocumentsOutSchema.model_validate(obj).model_dump()
+        result = SysDocumentsOutSchema.model_validate(obj).model_dump()
+        # 处理文件信息
+        if obj.file_upload:
+            result['file_info'] = SysFileUploadOutSchema.model_validate(obj.file_upload).model_dump()
+        else:
+            result['file_info'] = None
+        return result
     
     @classmethod
     async def list_sys_documents_service(cls, auth: AuthSchema, search: SysDocumentsQueryParam | None = None, order_by: list[dict] | None = None) -> list[dict]:
         """列表查询"""
         search_dict = search.__dict__ if search else None
-        obj_list = await SysDocumentsCRUD(auth).list_sys_documents_crud(search=search_dict, order_by=order_by)
-        return [SysDocumentsOutSchema.model_validate(obj).model_dump() for obj in obj_list]
+        obj_list = await SysDocumentsCRUD(auth).list_sys_documents_crud(search=search_dict, order_by=order_by, preload=["file_upload"])
+        result_list = []
+        for obj in obj_list:
+            result = SysDocumentsOutSchema.model_validate(obj).model_dump()
+            # 处理文件信息
+            if obj.file_upload:
+                result['file_info'] = SysFileUploadOutSchema.model_validate(obj.file_upload).model_dump()
+            else:
+                result['file_info'] = None
+            result_list.append(result)
+        return result_list
 
     @classmethod
     async def page_sys_documents_service(cls, auth: AuthSchema, page_no: int, page_size: int, search: SysDocumentsQueryParam | None = None, order_by: list[dict] | None = None) -> dict:
@@ -43,8 +59,41 @@ class SysDocumentsService:
             offset=offset,
             limit=page_size,
             order_by=order_by_list,
-            search=search_dict
+            search=search_dict,
+            preload=["file_upload"]
         )
+        # 处理文件信息
+        items_with_file_info = []
+        if result.get('_raw_items'):
+            # 如果返回的是原始对象，需要序列化并添加文件信息
+            for obj in result.get('items', []):
+                result_item = SysDocumentsOutSchema.model_validate(obj).model_dump()
+                if obj.file_upload:
+                    result_item['file_info'] = SysFileUploadOutSchema.model_validate(obj.file_upload).model_dump()
+                else:
+                    result_item['file_info'] = None
+                items_with_file_info.append(result_item)
+            result['items'] = items_with_file_info
+            del result['_raw_items']
+        else:
+            # 如果已经是序列化后的字典，需要重新查询对象获取文件信息
+            items_with_file_info = []
+            for item in result.get('items', []):
+                doc_id = item.get('id')
+                if doc_id:
+                    obj = await SysDocumentsCRUD(auth).get_by_id_sys_documents_crud(id=doc_id, preload=["file_upload"])
+                    if obj:
+                        result_item = SysDocumentsOutSchema.model_validate(obj).model_dump()
+                        if obj.file_upload:
+                            result_item['file_info'] = SysFileUploadOutSchema.model_validate(obj.file_upload).model_dump()
+                        else:
+                            result_item['file_info'] = None
+                        items_with_file_info.append(result_item)
+                    else:
+                        items_with_file_info.append(item)
+                else:
+                    items_with_file_info.append(item)
+            result['items'] = items_with_file_info
         return result
     
     @classmethod
@@ -87,18 +136,15 @@ class SysDocumentsService:
     async def batch_export_sys_documents_service(cls, obj_list: list[dict]) -> bytes:
         """批量导出"""
         mapping_dict = {
+            'lib_id': '知识库ID',
+            'file_upload_id': '文件上传ID',
+            'chunk_size': '文档切片大小',
+            'chunk_overlap': '文档切片重叠大小',
+            'processing_status': '处理状态(pending:待处理 processing:处理中 completed:已完成 failed:处理失败)',
+            'error_msg': '错误信息（处理失败时）',
             'id': '主键ID',
             'uuid': 'UUID全局唯一标识',
-            'lib_id': '所属知识库ID',
-            'dept_id': '所属部门ID(用于权限隔离)',
-            'file_name': '文件名',
-            'file_path': '存储路径(云端或本地路径)',
-            'file_size': '文件大小(Byte)',
-            'file_ext': '文件后缀',
-            'file_hash': '文件Hash(用于秒传/去重)',
-            'status': '状态(0:待处理 1:解析中 2:向量化中 3:已就绪 4:失败)',
-            'chunk_count': '切片数量',
-            'error_msg': '失败原因描述',
+            'status': '是否启用(0:启用 1:禁用)',
             'description': '备注/描述',
             'created_time': '创建时间',
             'updated_time': '更新时间',
@@ -125,18 +171,15 @@ class SysDocumentsService:
     async def batch_import_sys_documents_service(cls, auth: AuthSchema, file: UploadFile, update_support: bool = False) -> str:
         """批量导入"""
         header_dict = {
+            '知识库ID': 'lib_id',
+            '文件上传ID': 'file_upload_id',
+            '文档切片大小': 'chunk_size',
+            '文档切片重叠大小': 'chunk_overlap',
+            '处理状态(pending:待处理 processing:处理中 completed:已完成 failed:处理失败)': 'processing_status',
+            '错误信息（处理失败时）': 'error_msg',
             '主键ID': 'id',
             'UUID全局唯一标识': 'uuid',
-            '所属知识库ID': 'lib_id',
-            '所属部门ID(用于权限隔离)': 'dept_id',
-            '文件名': 'file_name',
-            '存储路径(云端或本地路径)': 'file_path',
-            '文件大小(Byte)': 'file_size',
-            '文件后缀': 'file_ext',
-            '文件Hash(用于秒传/去重)': 'file_hash',
-            '状态(0:待处理 1:解析中 2:向量化中 3:已就绪 4:失败)': 'status',
-            '切片数量': 'chunk_count',
-            '失败原因描述': 'error_msg',
+            '是否启用(0:启用 1:禁用)': 'status',
             '备注/描述': 'description',
             '创建时间': 'created_time',
             '更新时间': 'updated_time',
@@ -168,18 +211,15 @@ class SysDocumentsService:
                 count += 1
                 try:
                     data = {
+                        "lib_id": row['lib_id'],
+                        "file_upload_id": row['file_upload_id'],
+                        "chunk_size": row['chunk_size'],
+                        "chunk_overlap": row['chunk_overlap'],
+                        "processing_status": row['processing_status'],
+                        "error_msg": row['error_msg'],
                         "id": row['id'],
                         "uuid": row['uuid'],
-                        "lib_id": row['lib_id'],
-                        "dept_id": row['dept_id'],
-                        "file_name": row['file_name'],
-                        "file_path": row['file_path'],
-                        "file_size": row['file_size'],
-                        "file_ext": row['file_ext'],
-                        "file_hash": row['file_hash'],
                         "status": row['status'],
-                        "chunk_count": row['chunk_count'],
-                        "error_msg": row['error_msg'],
                         "description": row['description'],
                         "created_time": row['created_time'],
                         "updated_time": row['updated_time'],
@@ -210,18 +250,16 @@ class SysDocumentsService:
     async def import_template_download_sys_documents_service(cls) -> bytes:
         """下载导入模板"""
         header_list = [
+            '知识库ID',
+            '文件上传ID',
+            '文档分块数量',
+            '文档切片大小',
+            '文档切片重叠大小',
+            '处理状态(pending:待处理 processing:处理中 completed:已完成 failed:处理失败)',
+            '错误信息（处理失败时）',
             '主键ID',
             'UUID全局唯一标识',
-            '所属知识库ID',
-            '所属部门ID(用于权限隔离)',
-            '文件名',
-            '存储路径(云端或本地路径)',
-            '文件大小(Byte)',
-            '文件后缀',
-            '文件Hash(用于秒传/去重)',
-            '状态(0:待处理 1:解析中 2:向量化中 3:已就绪 4:失败)',
-            '切片数量',
-            '失败原因描述',
+            '是否启用(0:启用 1:禁用)',
             '备注/描述',
             '创建时间',
             '更新时间',

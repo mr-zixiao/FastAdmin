@@ -1,4 +1,4 @@
-<!-- 文档资产管理 -->
+<!-- 文档管理 -->
 <template>
   <div class="app-container">
     <!-- 搜索区域 -->
@@ -10,65 +10,47 @@
         :inline="true"
         @submit.prevent="handleQuery"
       >
-        <el-form-item label="所属知识库ID" prop="lib_id">
-          <el-input v-model="queryFormData.lib_id" placeholder="请输入所属知识库ID" clearable />
+        <el-form-item label="知识库" prop="lib_id">
+          <el-select
+            v-model="queryFormData.lib_id"
+            placeholder="请选择知识库"
+            clearable
+            filterable
+            style="width: 200px"
+          >
+            <el-option
+              v-for="lib in librariesList"
+              :key="lib.id"
+              :label="lib.lib_name"
+              :value="String(lib.id)"
+            />
+          </el-select>
         </el-form-item>
-        <el-form-item label="所属部门ID(用于权限隔离)" prop="dept_id">
-          <el-input v-model="queryFormData.dept_id" placeholder="请输入所属部门ID(用于权限隔离)" clearable />
-        </el-form-item>
-        <el-form-item label="文件名" prop="file_name">
-          <el-input v-model="queryFormData.file_name" placeholder="请输入文件名" clearable />
-        </el-form-item>
-        <el-form-item label="存储路径(云端或本地路径)" prop="file_path">
-          <el-input v-model="queryFormData.file_path" placeholder="请输入存储路径(云端或本地路径)" clearable />
-        </el-form-item>
-        <el-form-item label="文件大小(Byte)" prop="file_size">
-          <el-input v-model="queryFormData.file_size" placeholder="请输入文件大小(Byte)" clearable />
-        </el-form-item>
-        <el-form-item label="文件后缀" prop="file_ext">
-          <el-input v-model="queryFormData.file_ext" placeholder="请输入文件后缀" clearable />
-        </el-form-item>
-        <el-form-item label="文件Hash(用于秒传/去重)" prop="file_hash">
-          <el-input v-model="queryFormData.file_hash" placeholder="请输入文件Hash(用于秒传/去重)" clearable />
+        <el-form-item label="处理状态" prop="processing_status">
+          <el-select
+            v-model="queryFormData.processing_status"
+            placeholder="请选择处理状态"
+            clearable
+            style="width: 150px"
+          >
+            <el-option label="待处理" value="pending" />
+            <el-option label="处理中" value="processing" />
+            <el-option label="已完成" value="completed" />
+            <el-option label="处理失败" value="failed" />
+          </el-select>
         </el-form-item>
         <el-form-item prop="status" label="状态">
           <el-select
             v-model="queryFormData.status"
             placeholder="请选择状态"
-            style="width: 170px"
+            style="width: 120px"
             clearable
           >
             <el-option value="0" label="启用" />
             <el-option value="1" label="停用" />
           </el-select>
         </el-form-item>
-        <el-form-item label="切片数量" prop="chunk_count">
-          <el-input v-model="queryFormData.chunk_count" placeholder="请输入切片数量" clearable />
-        </el-form-item>
-        <el-form-item label="失败原因描述" prop="error_msg">
-          <el-input v-model="queryFormData.error_msg" placeholder="请输入失败原因描述" clearable />
-        </el-form-item>
-        <el-form-item v-if="isExpand" prop="created_time" label="创建时间">
-          <DatePicker v-model="createdDateRange" @update:model-value="handleCreatedDateRangeChange" />
-        </el-form-item>
-        <el-form-item v-if="isExpand" prop="updated_time" label="更新时间">
-          <DatePicker v-model="updatedDateRange" @update:model-value="handleUpdatedDateRangeChange" />
-        </el-form-item>
-        <el-form-item v-if="isExpand" prop="created_id" label="创建人">
-          <UserTableSelect
-            v-model="queryFormData.created_id"
-            @confirm-click="handleConfirm"
-            @clear-click="handleQuery"
-          />
-        </el-form-item>
-        <el-form-item v-if="isExpand" prop="updated_id" label="更新人">
-          <UserTableSelect
-            v-model="queryFormData.updated_id"
-            @confirm-click="handleConfirm"
-            @clear-click="handleQuery"
-          />
-        </el-form-item>
-        <!-- 查询、重置、展开/收起按钮 -->
+        <!-- 查询、重置按钮 -->
         <el-form-item>
           <el-button
             v-hasPerm="['module_gencode:sys_documents:query']"
@@ -85,20 +67,6 @@
           >
             重置
           </el-button>
-          <!-- 展开/收起 -->
-          <template v-if="isExpandable">
-            <el-link class="ml-3" type="primary" underline="never" @click="isExpand = !isExpand">
-              {{ isExpand ? "收起" : "展开" }}
-              <el-icon>
-                <template v-if="isExpand">
-                  <ArrowUp />
-                </template>
-                <template v-else>
-                  <ArrowDown />
-                </template>
-              </el-icon>
-            </el-link>
-          </template>
         </el-form-item>
       </el-form>
     </div>
@@ -108,8 +76,8 @@
       <template #header>
         <div class="card-header">
           <span>
-            文档资产管理列表
-            <el-tooltip content="文档资产管理列表">
+            文档管理列表
+            <el-tooltip content="文档管理列表">
               <QuestionFilled class="w-4 h-4 mx-1" />
             </el-tooltip>
           </span>
@@ -253,45 +221,44 @@
             {{ (queryFormData.page_no - 1) * queryFormData.page_size + scope.$index + 1 }}
           </template>
         </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'lib_id')?.show" label="所属知识库ID" prop="lib_id" min-width="140">
-        </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'dept_id')?.show" label="所属部门ID(用于权限隔离)" prop="dept_id" min-width="140">
-        </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'file_name')?.show" label="文件名" prop="file_name" min-width="140">
-        </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'file_path')?.show" label="存储路径(云端或本地路径)" prop="file_path" min-width="140">
-        </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'file_size')?.show" label="文件大小(Byte)" prop="file_size" min-width="140">
-        </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'file_ext')?.show" label="文件后缀" prop="file_ext" min-width="140">
-        </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'file_hash')?.show" label="文件Hash(用于秒传/去重)" prop="file_hash" min-width="140">
-        </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'status')?.show" label="状态(0:待处理 1:解析中 2:向量化中 3:已就绪 4:失败)" prop="status" min-width="140">
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'lib_id')?.show" label="知识库" prop="lib_id" min-width="150">
           <template #default="scope">
-            <el-tag :type="scope.row.status == '0' ? 'success' : 'info'">
+            {{ getLibraryName(scope.row.lib_id) }}
+          </template>
+        </el-table-column>
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'file_upload_id')?.show" label="文件名" prop="file_upload_id" min-width="180" show-overflow-tooltip>
+          <template #default="scope">
+            {{ scope.row.file_upload_id }}
+          </template>
+        </el-table-column>
+        <el-table-column type="number" v-if="tableColumns.find((col) => col.prop === 'chunk_size')?.show" label="切片大小" prop="chunk_size" min-width="100" align="center">
+        </el-table-column>
+        <el-table-column  type="number" v-if="tableColumns.find((col) => col.prop === 'chunk_overlap')?.show" label="切片重叠" prop="chunk_overlap" min-width="100" align="center">
+        </el-table-column>
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'processing_status')?.show" label="处理状态" prop="processing_status" min-width="120" align="center">
+          <template #default="scope">
+            <el-tag 
+              :type="getProcessingStatusType(scope.row.processing_status)" 
+              size="small"
+            >
+              {{ getProcessingStatusText(scope.row.processing_status) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'error_msg')?.show" label="错误信息" prop="error_msg" min-width="200" show-overflow-tooltip>
+        </el-table-column>
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'status')?.show" label="状态" prop="status" min-width="80" align="center">
+          <template #default="scope">
+            <el-tag :type="scope.row.status == '0' ? 'success' : 'info'" size="small">
               {{ scope.row.status == '0' ? '启用' : '停用' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'chunk_count')?.show" label="切片数量" prop="chunk_count" min-width="140">
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'created_time')?.show" label="创建时间" prop="created_time" min-width="160">
         </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'error_msg')?.show" label="失败原因描述" prop="error_msg" min-width="140">
-        </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'description')?.show" label="备注/描述" prop="description" min-width="140">
-        </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'created_time')?.show" label="创建时间" prop="created_time" min-width="140">
-        </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'updated_time')?.show" label="更新时间" prop="updated_time" min-width="140">
-        </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'created_id')?.show" label="创建人ID" prop="created_id" min-width="140">
+        <el-table-column v-if="tableColumns.find((col) => col.prop === 'created_id')?.show" label="创建人" prop="created_id" min-width="100">
           <template #default="scope">
-            <el-tag>{{ scope.row.created_by?.name }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column v-if="tableColumns.find((col) => col.prop === 'updated_id')?.show" label="更新人ID" prop="updated_id" min-width="140">
-          <template #default="scope">
-            <el-tag>{{ scope.row.updated_by?.name }}</el-tag>
+            <el-tag size="small">{{ scope.row.created_by?.name || '-' }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column
@@ -356,43 +323,34 @@
       <!-- 详情 -->
       <template v-if="dialogVisible.type === 'detail'">
         <el-descriptions :column="4" border>
+            <el-descriptions-item label="知识库ID" :span="2">
+              {{ detailFormData.lib_id }}
+            </el-descriptions-item>
+            <el-descriptions-item label="文件上传ID" :span="2">
+              {{ detailFormData.file_upload_id }}
+            </el-descriptions-item>
+            <el-descriptions-item label="文档切片大小" :span="2">
+              {{ detailFormData.chunk_size }}
+            </el-descriptions-item>
+            <el-descriptions-item label="文档切片重叠大小" :span="2">
+              {{ detailFormData.chunk_overlap }}
+            </el-descriptions-item>
+            <el-descriptions-item label="处理状态(pending:待处理 processing:处理中 completed:已完成 failed:处理失败)" :span="2">
+              {{ detailFormData.processing_status }}
+            </el-descriptions-item>
+            <el-descriptions-item label="错误信息" :span="2">
+              {{ detailFormData.error_msg }}
+            </el-descriptions-item>
             <el-descriptions-item label="主键ID" :span="2">
               {{ detailFormData.id }}
             </el-descriptions-item>
             <el-descriptions-item label="UUID全局唯一标识" :span="2">
               {{ detailFormData.uuid }}
             </el-descriptions-item>
-            <el-descriptions-item label="所属知识库ID" :span="2">
-              {{ detailFormData.lib_id }}
-            </el-descriptions-item>
-            <el-descriptions-item label="所属部门ID(用于权限隔离)" :span="2">
-              {{ detailFormData.dept_id }}
-            </el-descriptions-item>
-            <el-descriptions-item label="文件名" :span="2">
-              {{ detailFormData.file_name }}
-            </el-descriptions-item>
-            <el-descriptions-item label="存储路径(云端或本地路径)" :span="2">
-              {{ detailFormData.file_path }}
-            </el-descriptions-item>
-            <el-descriptions-item label="文件大小(Byte)" :span="2">
-              {{ detailFormData.file_size }}
-            </el-descriptions-item>
-            <el-descriptions-item label="文件后缀" :span="2">
-              {{ detailFormData.file_ext }}
-            </el-descriptions-item>
-            <el-descriptions-item label="文件Hash(用于秒传/去重)" :span="2">
-              {{ detailFormData.file_hash }}
-            </el-descriptions-item>
             <el-descriptions-item label="状态" :span="2">
               <el-tag :type="detailFormData.status == '0' ? 'success' : 'danger'">
                 {{ detailFormData.status == '0' ? "启用" : "停用" }}
               </el-tag>
-            </el-descriptions-item>
-            <el-descriptions-item label="切片数量" :span="2">
-              {{ detailFormData.chunk_count }}
-            </el-descriptions-item>
-            <el-descriptions-item label="失败原因描述" :span="2">
-              {{ detailFormData.error_msg }}
             </el-descriptions-item>
             <el-descriptions-item label="备注/描述" :span="2">
               {{ detailFormData.description }}
@@ -414,39 +372,63 @@
 
       <!-- 新增、编辑表单 -->
       <template v-else>
-        <el-form ref="dataFormRef" :model="formData" :rules="rules" label-suffix=":" label-width="auto" label-position="right">
-          <el-form-item label="所属知识库ID" prop="lib_id" :required="false">
-            <el-input v-model="formData.lib_id" placeholder="请输入所属知识库ID" />
+        <el-form ref="dataFormRef" :model="formData" :rules="rules" label-suffix=":" label-width="120px" label-position="right">
+          <el-form-item label="知识库" prop="lib_id" :required="true">
+            <el-select
+              v-model="formData.lib_id"
+              placeholder="请选择知识库"
+              filterable
+              style="width: 100%"
+            >
+              <el-option
+                v-for="lib in librariesList"
+                :key="lib.id"
+                :label="lib.lib_name"
+                :value="String(lib.id)"
+              />
+            </el-select>
           </el-form-item>
-          <el-form-item label="所属部门ID(用于权限隔离)" prop="dept_id" :required="false">
-            <el-input v-model="formData.dept_id" placeholder="请输入所属部门ID(用于权限隔离)" />
+          
+          <!-- 文件上传区域 -->
+          <el-form-item label="切片大小" prop="chunk_size">
+            <el-input-number v-model="formData.chunk_size" :min="100" :max="10000" :step="100" placeholder="请输入切片大小" style="width: 100%" />
           </el-form-item>
-          <el-form-item label="文件名" prop="file_name" :required="false">
-            <el-input v-model="formData.file_name" placeholder="请输入文件名" />
+          <el-form-item label="切片重叠" prop="chunk_overlap">
+            <el-input-number v-model="formData.chunk_overlap" :min="0" :max="1000" :step="10" placeholder="请输入切片重叠大小" style="width: 100%" />
           </el-form-item>
-          <el-form-item label="存储路径(云端或本地路径)" prop="file_path" :required="false">
-            <el-input v-model="formData.file_path" placeholder="请输入存储路径(云端或本地路径)" />
+          
+          <el-form-item label="上传文件" :required="dialogVisible.type === 'create'">
+            <el-upload
+              ref="uploadRef"
+              class="upload-demo"
+              drag
+              :auto-upload="false"
+              :multiple="true"
+              :on-change="handleFileChange"
+              :on-remove="handleFileRemove"
+              :file-list="fileList"
+              :limit="50"
+            >
+              <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+              <div class="el-upload__text">
+                将文件拖拽到此处，或<em>点击上传</em>
+              </div>
+              <template #tip>
+                <div class="el-upload__tip">
+                  支持一次选择多个文件，最多50个文件，单个文件不超过10MB<br>
+                  <span style="color: var(--el-color-primary); font-size: 12px;">
+                    ✨ 支持最多5个文件并发上传，提升上传速度
+                  </span>
+                </div>
+              </template>
+            </el-upload>
           </el-form-item>
-          <el-form-item label="文件大小(Byte)" prop="file_size" :required="false">
-            <el-input v-model="formData.file_size" placeholder="请输入文件大小(Byte)" />
-          </el-form-item>
-          <el-form-item label="文件后缀" prop="file_ext" :required="false">
-            <el-input v-model="formData.file_ext" placeholder="请输入文件后缀" />
-          </el-form-item>
-          <el-form-item label="文件Hash(用于秒传/去重)" prop="file_hash" :required="false">
-            <el-input v-model="formData.file_hash" placeholder="请输入文件Hash(用于秒传/去重)" />
-          </el-form-item>
+          
           <el-form-item label="状态" prop="status" :required="true">
             <el-radio-group v-model="formData.status">
               <el-radio value="0">启用</el-radio>
               <el-radio value="1">停用</el-radio>
             </el-radio-group>
-          </el-form-item>
-          <el-form-item label="切片数量" prop="chunk_count" :required="false">
-            <el-input v-model="formData.chunk_count" placeholder="请输入切片数量" />
-          </el-form-item>
-          <el-form-item label="失败原因描述" prop="error_msg" :required="false">
-            <el-input v-model="formData.error_msg" placeholder="请输入失败原因描述" />
           </el-form-item>
           <el-form-item label="描述" prop="description">
             <el-input
@@ -499,19 +481,17 @@ defineOptions({
 
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { QuestionFilled, ArrowUp, ArrowDown, Check, CircleClose } from '@element-plus/icons-vue'
-import { formatToDateTime } from "@/utils/dateUtil";
+import { QuestionFilled, Check, CircleClose, UploadFilled } from '@element-plus/icons-vue'
 import { useDictStore } from "@/store";
 import { ResultEnum } from '@/enums/api/result.enum'
-import DatePicker from "@/components/DatePicker/index.vue";
 import type { IContentConfig } from "@/components/CURD/types";
 import ImportModal from "@/components/CURD/ImportModal.vue";
 import ExportModal from "@/components/CURD/ExportModal.vue";
 import SysDocumentsAPI, { SysDocumentsPageQuery, SysDocumentsTable, SysDocumentsForm } from '@/api/module_gencode/sys_documents'
+import SysLibrariesAPI, { SysLibrariesTable } from '@/api/module_gencode/sys_libraries'
+import SysFileUploadAPI from '@/api/module_gencode/sys_file_upload'
 
 const visible = ref(true);
-const isExpand = ref(false);
-const isExpandable = ref(true);
 const queryFormRef = ref();
 const dataFormRef = ref();
 const total = ref(0);
@@ -521,8 +501,18 @@ const loading = ref(false);
 
 // 字典仓库与需要加载的字典类型
 const dictStore = useDictStore()
-const dictTypes: any = [
-]
+const dictTypes: any = []
+
+// 知识库列表
+const librariesList = ref<SysLibrariesTable[]>([])
+
+// 文件上传相关
+const uploadRef = ref()
+const fileList = ref<any[]>([])
+const isUploading = ref(false)
+
+// 并发上传配置
+const MAX_CONCURRENT_UPLOADS = 5
 
 // 分页表单
 const pageTableData = ref<SysDocumentsTable[]>([]);
@@ -531,41 +521,29 @@ const pageTableData = ref<SysDocumentsTable[]>([]);
 const tableColumns = ref([
   { prop: "selection", label: "选择框", show: true },
   { prop: "index", label: "序号", show: true },
-  { prop: 'lib_id', label: '所属知识库ID', show: true },
-  { prop: 'dept_id', label: '所属部门ID(用于权限隔离)', show: true },
-  { prop: 'file_name', label: '文件名', show: true },
-  { prop: 'file_path', label: '存储路径(云端或本地路径)', show: true },
-  { prop: 'file_size', label: '文件大小(Byte)', show: true },
-  { prop: 'file_ext', label: '文件后缀', show: true },
-  { prop: 'file_hash', label: '文件Hash(用于秒传/去重)', show: true },
-  { prop: 'status', label: '状态(0:待处理 1:解析中 2:向量化中 3:已就绪 4:失败)', show: true },
-  { prop: 'chunk_count', label: '切片数量', show: true },
-  { prop: 'error_msg', label: '失败原因描述', show: true },
-  { prop: 'description', label: '备注/描述', show: true },
+  { prop: 'lib_id', label: '知识库', show: true },
+  { prop: 'file_upload_id', label: '文件名', show: true },
+  { prop: 'chunk_size', label: '切片大小', show: true },
+  { prop: 'chunk_overlap', label: '切片重叠', show: true },
+  { prop: 'processing_status', label: '处理状态', show: true },
+  { prop: 'error_msg', label: '错误信息', show: true },
+  { prop: 'status', label: '状态', show: true },
   { prop: 'created_time', label: '创建时间', show: true },
-  { prop: 'updated_time', label: '更新时间', show: true },
-  { prop: 'created_id', label: '创建人ID', show: true },
-  { prop: 'updated_id', label: '更新人ID', show: true },
+  { prop: 'created_id', label: '创建人', show: true },
   { prop: 'operation', label: '操作', show: true }
 ]);
 
 // 导出列（不含选择/序号/操作）
 const exportColumns = [
-  { prop: 'lib_id', label: '所属知识库ID' },
-  { prop: 'dept_id', label: '所属部门ID(用于权限隔离)' },
-  { prop: 'file_name', label: '文件名' },
-  { prop: 'file_path', label: '存储路径(云端或本地路径)' },
-  { prop: 'file_size', label: '文件大小(Byte)' },
-  { prop: 'file_ext', label: '文件后缀' },
-  { prop: 'file_hash', label: '文件Hash(用于秒传/去重)' },
-  { prop: 'status', label: '状态(0:待处理 1:解析中 2:向量化中 3:已就绪 4:失败)' },
-  { prop: 'chunk_count', label: '切片数量' },
-  { prop: 'error_msg', label: '失败原因描述' },
-  { prop: 'description', label: '备注/描述' },
+  { prop: 'lib_id', label: '知识库' },
+  { prop: 'file_upload_id', label: '文件名' },
+  { prop: 'chunk_size', label: '切片大小' },
+  { prop: 'chunk_overlap', label: '切片重叠' },
+  { prop: 'processing_status', label: '处理状态' },
+  { prop: 'error_msg', label: '错误信息' },
+  { prop: 'status', label: '状态' },
   { prop: 'created_time', label: '创建时间' },
-  { prop: 'updated_time', label: '更新时间' },
-  { prop: 'created_id', label: '创建人ID' },
-  { prop: 'updated_id', label: '更新人ID' },
+  { prop: 'created_id', label: '创建人' },
 ]
 
 // 导入/导出配置
@@ -593,65 +571,27 @@ const curdContentConfig = {
 
 // 详情表单
 const detailFormData = ref<SysDocumentsTable>({});
-// 日期范围临时变量
-const createdDateRange = ref<[Date, Date] | []>([]);
-// 更新时间范围临时变量
-const updatedDateRange = ref<[Date, Date] | []>([]);
-
-// 处理创建时间范围变化
-function handleCreatedDateRangeChange(range: [Date, Date]) {
-  createdDateRange.value = range;
-  if (range && range.length === 2) {
-    queryFormData.created_time = [formatToDateTime(range[0]), formatToDateTime(range[1])];
-  } else {
-    queryFormData.created_time = undefined;
-  }
-}
-
-// 处理更新时间范围变化
-function handleUpdatedDateRangeChange(range: [Date, Date]) {
-  updatedDateRange.value = range;
-  if (range && range.length === 2) {
-    queryFormData.updated_time = [formatToDateTime(range[0]), formatToDateTime(range[1])];
-  } else {
-    queryFormData.updated_time = undefined;
-  }
-}
 
 // 分页查询参数
 const queryFormData = reactive<SysDocumentsPageQuery>({
   page_no: 1,
   page_size: 10,
   lib_id: undefined,
-  dept_id: undefined,
-  file_name: undefined,
-  file_path: undefined,
-  file_size: undefined,
-  file_ext: undefined,
-  file_hash: undefined,
+  processing_status: undefined,
   status: undefined,
-  chunk_count: undefined,
-  error_msg: undefined,
-  created_time: undefined,
-  updated_time: undefined,
-  created_id: undefined,
-  updated_id: undefined,
 });
 
 
 // 编辑表单
 const formData = reactive<SysDocumentsForm>({
-  id: undefined,
   lib_id: undefined,
-  dept_id: undefined,
-  file_name: undefined,
-  file_path: undefined,
-  file_size: undefined,
-  file_ext: undefined,
-  file_hash: undefined,
-  status: undefined,
-  chunk_count: undefined,
+  file_upload_id: undefined,
+  chunk_size: undefined,
+  chunk_overlap: undefined,
+  processing_status: undefined,
   error_msg: undefined,
+  id: undefined,
+  status: undefined,
   description: undefined,
 });
 
@@ -664,41 +604,32 @@ const dialogVisible = reactive({
 
 // 表单验证规则
 const rules = reactive({
+  lib_id: [
+    { required: false, message: '请输入知识库ID', trigger: 'blur' },
+  ],
+  file_upload_id: [
+    { required: false, message: '请输入文件上传ID', trigger: 'blur' },
+  ],
+  chunk_size: [
+    { required: false, message: '请输入文档切片大小', trigger: 'blur' },
+  ],
+  chunk_overlap: [
+    { required: false, message: '请输入文档切片重叠大小', trigger: 'blur' },
+  ],
+  processing_status: [
+    { required: false, message: '请输入处理状态(pending:待处理 processing:处理中 completed:已完成 failed:处理失败)', trigger: 'blur' },
+  ],
+  error_msg: [
+    { required: false, message: '请输入错误信息（处理失败时）', trigger: 'blur' },
+  ],
   id: [
     { required: false, message: '请输入主键ID', trigger: 'blur' },
   ],
   uuid: [
     { required: true, message: '请输入UUID全局唯一标识', trigger: 'blur' },
   ],
-  lib_id: [
-    { required: true, message: '请输入所属知识库ID', trigger: 'blur' },
-  ],
-  dept_id: [
-    { required: false, message: '请输入所属部门ID(用于权限隔离)', trigger: 'blur' },
-  ],
-  file_name: [
-    { required: true, message: '请输入文件名', trigger: 'blur' },
-  ],
-  file_path: [
-    { required: true, message: '请输入存储路径(云端或本地路径)', trigger: 'blur' },
-  ],
-  file_size: [
-    { required: false, message: '请输入文件大小(Byte)', trigger: 'blur' },
-  ],
-  file_ext: [
-    { required: false, message: '请输入文件后缀', trigger: 'blur' },
-  ],
-  file_hash: [
-    { required: false, message: '请输入文件Hash(用于秒传/去重)', trigger: 'blur' },
-  ],
   status: [
-    { required: true, message: '请输入状态(0:待处理 1:解析中 2:向量化中 3:已就绪 4:失败)', trigger: 'blur' },
-  ],
-  chunk_count: [
-    { required: false, message: '请输入切片数量', trigger: 'blur' },
-  ],
-  error_msg: [
-    { required: false, message: '请输入失败原因描述', trigger: 'blur' },
+    { required: true, message: '请输入是否启用(0:启用 1:禁用)', trigger: 'blur' },
   ],
   description: [
     { required: false, message: '请输入备注/描述', trigger: 'blur' },
@@ -767,27 +698,67 @@ function handleConfirm() {
 async function handleResetQuery() {
   queryFormRef.value.resetFields();
   queryFormData.page_no = 1;
-  // 重置日期范围选择器
-  createdDateRange.value = [];
-  updatedDateRange.value = [];
-  queryFormData.created_time = undefined;
-  queryFormData.updated_time = undefined;
   loadingData();
+}
+
+// 获取知识库名称
+function getLibraryName(libId: any): string {
+  const lib = librariesList.value.find(l => l.id === libId)
+  return lib?.lib_name || libId || '-'
+}
+
+// 获取处理状态文本
+function getProcessingStatusText(status: any): string {
+  const statusMap: Record<string, string> = {
+    'pending': '待处理',
+    'processing': '处理中',
+    'completed': '已完成',
+    'failed': '处理失败'
+  }
+  return statusMap[status] || status || '-'
+}
+
+// 获取处理状态类型
+function getProcessingStatusType(status: any): 'info' | 'warning' | 'success' | 'danger' {
+  const typeMap: Record<string, 'info' | 'warning' | 'success' | 'danger'> = {
+    'pending': 'info',
+    'processing': 'warning',
+    'completed': 'success',
+    'failed': 'danger'
+  }
+  return typeMap[status] || 'info'
+}
+
+// 加载知识库列表
+async function loadLibraries() {
+  try {
+    const response = await SysLibrariesAPI.listSysLibraries({
+      page_no: 1,
+      page_size: 100,
+      status: '0'
+    })
+    librariesList.value = response.data.data.items || []
+  } catch (error) {
+    console.error('加载知识库列表失败:', error)
+  }
+}
+
+// 文件选择变化
+function handleFileChange(file: any, fileListParam: any[]) {
+  fileList.value = [...fileListParam]
+}
+
+// 文件移除
+function handleFileRemove(file: any, fileListParam: any[]) {
+  fileList.value = [...fileListParam]
 }
 
 // 定义初始表单数据常量
 const initialFormData: SysDocumentsForm = {
-  id: undefined,
   lib_id: undefined,
-  dept_id: undefined,
-  file_name: undefined,
-  file_path: undefined,
-  file_size: undefined,
-  file_ext: undefined,
-  file_hash: undefined,
-  status: undefined,
-  chunk_count: undefined,
-  error_msg: undefined,
+  chunk_size: 1000,
+  chunk_overlap: 200,
+  status: '0',
   description: undefined,
 };
 
@@ -799,6 +770,11 @@ async function resetForm() {
   }
   // 完全重置 formData 为初始状态
   Object.assign(formData, initialFormData);
+  // 清空文件列表
+  fileList.value = [];
+  if (uploadRef.value) {
+    uploadRef.value.clearFiles();
+  }
 }
 
 // 行复选框选中项变化
@@ -816,6 +792,11 @@ async function handleCloseDialog() {
 // 打开弹窗
 async function handleOpenDialog(type: "create" | "update" | "detail", id?: number) {
   dialogVisible.type = type;
+  // 确保知识库列表已加载
+  if (librariesList.value.length === 0) {
+    await loadLibraries();
+  }
+  
   if (id) {
     const response = await SysDocumentsAPI.detailSysDocuments(id);
     if (type === "detail") {
@@ -826,21 +807,54 @@ async function handleOpenDialog(type: "create" | "update" | "detail", id?: numbe
       Object.assign(formData, response.data.data);
     }
   } else {
-    dialogVisible.title = "新增SysDocuments";
-    formData.id = undefined;
-    formData.lib_id = undefined;
-    formData.dept_id = undefined;
-    formData.file_name = undefined;
-    formData.file_path = undefined;
-    formData.file_size = undefined;
-    formData.file_ext = undefined;
-    formData.file_hash = undefined;
-    formData.status = undefined;
-    formData.chunk_count = undefined;
-    formData.error_msg = undefined;
-    formData.description = undefined;
+    dialogVisible.title = "新增文档";
+    Object.assign(formData, initialFormData);
+    fileList.value = [];
   }
   dialogVisible.visible = true;
+}
+
+// 并发上传控制器（复用上传逻辑）
+class ConcurrentUploader {
+  private maxConcurrent: number;
+  private running: number = 0;
+  private queue: (() => Promise<void>)[] = [];
+
+  constructor(maxConcurrent: number = MAX_CONCURRENT_UPLOADS) {
+    this.maxConcurrent = maxConcurrent;
+  }
+
+  async add<T>(task: () => Promise<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+      this.queue.push(async () => {
+        try {
+          const result = await task();
+          resolve(result);
+        } catch (error) {
+          reject(error);
+        }
+      });
+      this.process();
+    });
+  }
+
+  private async process() {
+    if (this.running >= this.maxConcurrent || this.queue.length === 0) {
+      return;
+    }
+
+    this.running++;
+    const task = this.queue.shift();
+    
+    if (task) {
+      try {
+        await task();
+      } finally {
+        this.running--;
+        this.process();
+      }
+    }
+  }
 }
 
 // 提交表单（防抖）
@@ -848,32 +862,117 @@ async function handleSubmit() {
   // 表单校验
   dataFormRef.value.validate(async (valid: any) => {
     if (valid) {
-      loading.value = true;
-      // 根据弹窗传入的参数(deatil\create\update)判断走什么逻辑
+      // 根据弹窗类型判断是新增还是修改
       const id = formData.id;
+      
       if (id) {
+        // 修改逻辑
         try {
+          loading.value = true;
           await SysDocumentsAPI.updateSysDocuments(id, { id, ...formData });
+          ElMessage.success('修改成功');
           dialogVisible.visible = false;
           resetForm();
           handleCloseDialog();
           handleResetQuery();
         } catch (error: any) {
           console.error(error);
+          ElMessage.error(error?.response?.data?.msg || '修改失败');
         } finally {
           loading.value = false;
         }
       } else {
+        // 新增逻辑 - 先上传文件，然后循环新增
+        const files = uploadRef.value?.fileList || fileList.value;
+        if (!files || files.length === 0) {
+          ElMessage.warning('请选择要上传的文件');
+          return;
+        }
+
+        // 获取所有有效的文件对象
+        const validFiles = files.map((fileItem: any) => fileItem.raw || fileItem).filter((file: any) => file);
+
+        if (validFiles.length === 0) {
+          ElMessage.warning('没有有效的文件');
+          return;
+        }
+
+        loading.value = true;
+        isUploading.value = true;
+
+        let successCount = 0;
+        let errorCount = 0;
+        const errors: string[] = [];
+
         try {
-          await SysDocumentsAPI.createSysDocuments(formData);
-          dialogVisible.visible = false;
-          resetForm();
-          handleCloseDialog();
-          handleResetQuery();
+          // 创建并发上传控制器
+          const uploader = new ConcurrentUploader(MAX_CONCURRENT_UPLOADS);
+
+          // 为每个文件创建上传+新增任务
+          const tasks = validFiles.map((file: File, index: number) => 
+            uploader.add(async () => {
+              try {
+                // 1. 先上传文件
+                const uploadResponse = await SysFileUploadAPI.uploadFile(file, formData.description);
+                
+                if (uploadResponse.data.code !== ResultEnum.SUCCESS) {
+                  throw new Error(uploadResponse.data.msg || '文件上传失败');
+                }
+
+                const uploadedFile = uploadResponse.data.data;
+
+                // 2. 创建文档记录
+                const documentData: SysDocumentsForm = {
+                  lib_id: formData.lib_id,
+                  file_upload_id: String(uploadedFile.id),
+                  chunk_size: formData.chunk_size,
+                  chunk_overlap: formData.chunk_overlap,
+                  status: formData.status,
+                  description: formData.description,
+                };
+
+                const createResponse = await SysDocumentsAPI.createSysDocuments(documentData);
+                
+                if (createResponse.data.code !== ResultEnum.SUCCESS) {
+                  throw new Error(createResponse.data.msg || '创建文档记录失败');
+                }
+
+                successCount++;
+              } catch (error: any) {
+                errorCount++;
+                const errorMsg = error?.response?.data?.msg || error?.message || '处理失败';
+                errors.push(`文件 ${file.name}: ${errorMsg}`);
+                console.error(`处理文件 ${file.name} 失败:`, error);
+              }
+            })
+          );
+
+          // 等待所有任务完成
+          await Promise.allSettled(tasks);
+
+          // 显示结果
+          if (successCount > 0 && errorCount === 0) {
+            ElMessage.success(`成功上传并创建 ${successCount} 个文档`);
+            dialogVisible.visible = false;
+            resetForm();
+            handleCloseDialog();
+            handleResetQuery();
+          } else if (successCount > 0 && errorCount > 0) {
+            ElMessage.warning(
+              `成功: ${successCount} 个，失败: ${errorCount} 个\n${errors.slice(0, 3).join('\n')}${errors.length > 3 ? '\n...' : ''}`
+            );
+            handleResetQuery();
+          } else {
+            ElMessage.error(
+              `所有文件处理失败\n${errors.slice(0, 3).join('\n')}${errors.length > 3 ? '\n...' : ''}`
+            );
+          }
         } catch (error: any) {
           console.error(error);
+          ElMessage.error('批量处理失败');
         } finally {
           loading.value = false;
+          isUploading.value = false;
         }
       }
     }
@@ -947,9 +1046,15 @@ onMounted(async () => {
   if (dictTypes.length > 0) {
     await dictStore.getDict(dictTypes)
   }
+  // 加载知识库列表
+  await loadLibraries();
+  // 加载数据
   loadingData();
 });
 </script>
 
 <style lang="scss" scoped>
+.upload-demo {
+  width: 100%;
+}
 </style>

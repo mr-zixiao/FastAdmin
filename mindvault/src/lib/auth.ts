@@ -73,7 +73,34 @@ export class Auth {
     Storage.remove(AUTH_KEYS.REFRESH_TOKEN);
     Storage.sessionRemove(AUTH_KEYS.ACCESS_TOKEN);
     Storage.sessionRemove(AUTH_KEYS.REFRESH_TOKEN);
+    Storage.remove(AUTH_KEYS.USER_INFO);
+    Storage.sessionRemove(AUTH_KEYS.USER_INFO);
     // 不清除记住我设置，保留用户偏好
+  }
+
+  /**
+   * 设置用户信息
+   * @param userInfo 用户信息
+   * @param rememberMe 是否记住我（决定存储位置）
+   */
+  static setUserInfo(userInfo: any, rememberMe?: boolean): void {
+    const isRemember = rememberMe ?? Auth.getRememberMe();
+    if (isRemember) {
+      Storage.set(AUTH_KEYS.USER_INFO, userInfo);
+    } else {
+      Storage.sessionSet(AUTH_KEYS.USER_INFO, userInfo);
+    }
+  }
+
+  /**
+   * 获取用户信息
+   * @returns 用户信息
+   */
+  static getUserInfo<T = any>(): T | null {
+    const isRememberMe = Storage.get<boolean>(AUTH_KEYS.REMEMBER_ME, false);
+    return isRememberMe
+      ? Storage.get<T>(AUTH_KEYS.USER_INFO, null)
+      : Storage.sessionGet<T>(AUTH_KEYS.USER_INFO, null);
   }
 
   /**

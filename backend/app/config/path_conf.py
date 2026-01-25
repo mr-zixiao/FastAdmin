@@ -15,6 +15,9 @@ STATIC_DIR = BASE_DIR / 'static'
 # 上传文件目录
 UPLOAD_DIR = STATIC_DIR / 'upload'
 
+# 文件上传模块存储目录（以id命名文件）
+FILE_UPLOAD_DIR = STATIC_DIR / 'upload' / 'sys_file_upload'
+
 # 下载文件目录
 DOWNLOAD_DIR = STATIC_DIR / 'download'
 

@@ -145,7 +145,7 @@ class Settings(BaseSettings):
     ALLOWED_EXTENSIONS: list[str] = [                 # 允许的文件类型
         '.gif', '.jpg', '.jpeg', '.png', '.ico', '.svg', '.xls', '.xlsx'
     ]
-    MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 最大文件大小(10MB)
+    MAX_FILE_SIZE: int = 20 * 1024 * 1024  # 最大文件大小(10MB)
 
     # ================================================= #
     # ***************** Swagger配置 ***************** #

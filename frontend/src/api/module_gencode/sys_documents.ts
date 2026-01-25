@@ -95,15 +95,12 @@ export default SysDocumentsAPI;
 // 列表查询参数
 export interface SysDocumentsPageQuery extends PageQuery {
   lib_id?: string;
-  dept_id?: string;
-  file_name?: string;
-  file_path?: string;
-  file_size?: string;
-  file_ext?: string;
-  file_hash?: string;
-  status?: string;
-  chunk_count?: string;
+  file_upload_id?: string;
+  chunk_size?: number;
+  chunk_overlap?: number;
+  processing_status?: string;
   error_msg?: string;
+  status?: string;
   created_id?: number;
   updated_id?: number;
   created_time?: string[];
@@ -113,13 +110,10 @@ export interface SysDocumentsPageQuery extends PageQuery {
 // 列表展示项
 export interface SysDocumentsTable extends BaseType{
   lib_id?: string;
-  dept_id?: string;
-  file_name?: string;
-  file_path?: string;
-  file_size?: string;
-  file_ext?: string;
-  file_hash?: string;
-  chunk_count?: string;
+  file_upload_id?: string;
+  chunk_size?: number;
+  chunk_overlap?: number;
+  processing_status?: boolean;
   error_msg?: string;
   created_id?: string;
   updated_id?: string;
@@ -130,12 +124,9 @@ export interface SysDocumentsTable extends BaseType{
 // 新增/修改/详情表单参数
 export interface SysDocumentsForm extends BaseFormType{
   lib_id?: string;
-  dept_id?: string;
-  file_name?: string;
-  file_path?: string;
-  file_size?: string;
-  file_ext?: string;
-  file_hash?: string;
-  chunk_count?: string;
+  file_upload_id?: string;
+  chunk_size?: number;
+  chunk_overlap?: number;
+  processing_status?: boolean;
   error_msg?: string;
 }
