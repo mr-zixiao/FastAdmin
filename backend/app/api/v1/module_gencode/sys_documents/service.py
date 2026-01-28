@@ -12,7 +12,7 @@ from app.api.v1.module_system.auth.schema import AuthSchema
 from .schema import SysDocumentsCreateSchema, SysDocumentsUpdateSchema, SysDocumentsOutSchema, SysDocumentsQueryParam
 from .crud import SysDocumentsCRUD
 from app.api.v1.module_gencode.sys_file_upload.schema import SysFileUploadOutSchema
-
+from app.doc_processing.tasks import  process_document_task
 
 class SysDocumentsService:
     """
@@ -62,6 +62,7 @@ class SysDocumentsService:
             search=search_dict,
             preload=["file_upload"]
         )
+
         # 处理文件信息
         items_with_file_info = []
         if result.get('_raw_items'):
@@ -101,6 +102,13 @@ class SysDocumentsService:
         """创建"""
         # 检查唯一性约束
         obj = await SysDocumentsCRUD(auth).create_sys_documents_crud(data=data)
+        process_document_task.delay(
+            doc_id=obj.id,
+            lib_id=obj.lib_id,
+            file_path="storage/uploads/test.pdf",  # 实际应从数据库查
+            chunk_size=obj.chunk_size,
+            chunk_overlap=obj.chunk_overlap
+        )
         return SysDocumentsOutSchema.model_validate(obj).model_dump()
     
     @classmethod

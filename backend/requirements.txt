@@ -44,3 +44,4 @@ fastapi-limiter==0.1.6
 langchain
 langchain-openai
 pymilvus
+celery

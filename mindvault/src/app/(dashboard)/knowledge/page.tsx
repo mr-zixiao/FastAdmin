@@ -78,7 +78,7 @@ function KnowledgeCard({
   return (
     <Card
       className="group cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1"
-      onClick={() => router.push(`/knowledge/${library.id}`)}
+      onClick={() => router.push(`/knowledge/${library.id}/documents`)}
     >
       <CardHeader>
         <div className="flex items-start justify-between">

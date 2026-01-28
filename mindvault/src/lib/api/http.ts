@@ -1,6 +1,6 @@
 import { ResultEnum } from "@/enums/api/result.enum";
 import { Auth } from "@/lib/auth";
-
+import { toast } from "sonner";
 export interface ApiResponse<T = any> {
   code: number;
   data: T;
@@ -19,7 +19,7 @@ export async function httpRequest<TData>(
   const accessToken = Auth.getAccessToken();
 
   // 构建请求头
-  const headers: HeadersInit = {
+  const headers: any = {
     ...(init?.headers ?? {}),
   };
 
@@ -38,6 +38,12 @@ export async function httpRequest<TData>(
     ...init,
     cache: "no-store",
   });
+  if (res.status == 401) {
+    toast.error("登录已过期，请重新登录！");
+    Auth.clearAuth();
+    window.location.href = "/login";
+    return Promise.reject<TData>();
+  }
 
   if (!res.ok) {
     // 网络层错误依然作为 Promise 拒绝抛给上层（一般会被全局错误边界捕获）
@@ -45,35 +51,9 @@ export async function httpRequest<TData>(
   }
 
   const json = (await res.json()) as ApiResponse<TData>;
-
-  // 基于统一的返回码进行差异化处理（不直接 throw，采用跳转或弹窗提示）
-  // 如果返回 code 为 10401（令牌过期），重定向到登录页
-  if (json.code === 10401 || json.code === ResultEnum.TOKEN_EXPIRED) {
-    if (typeof window !== "undefined") {
-      Auth.clearAuth();
-      window.location.href = "/login";
-    }
-    return Promise.reject<TData>();
-  }
-
   switch (json.code) {
     case ResultEnum.SUCCESS: {
       return json.data;
-    }
-    case ResultEnum.UNAUTHORIZED: {
-      if (typeof window !== "undefined") {
-        // 清理本地认证信息并跳转到登录页
-        Auth.clearAuth();
-        window.location.href = "/login";
-      }
-      return Promise.reject<TData>();
-    }
-    case ResultEnum.TOKEN_EXPIRED: {
-      if (typeof window !== "undefined") {
-        Auth.clearAuth();
-        window.location.href = "/login";
-      }
-      return Promise.reject<TData>();
     }
     case ResultEnum.ERROR: {
       if (typeof window !== "undefined") {
@@ -91,10 +71,10 @@ export async function httpRequest<TData>(
     default: {
       // 如果后端 success 字段标记失败，优先提示后端信息
       if (json.success === false) {
-          if (typeof window !== "undefined") {
-            alert(json.msg || "请求失败");
-          }
-          return Promise.reject<TData>(json);
+        if (typeof window !== "undefined") {
+          alert(json.msg || "请求失败");
+        }
+        return Promise.reject<TData>(json);
       }
       if (typeof window !== "undefined") {
         alert(json.msg || "未知响应状态");
@@ -115,7 +95,7 @@ export async function httpRequestBlob(
   const accessToken = Auth.getAccessToken();
 
   // 构建请求头
-  const headers: HeadersInit = {
+  const headers: any = {
     ...(init?.headers ?? {}),
   };
 
@@ -141,4 +121,3 @@ export async function httpRequestBlob(
 
   return res.blob();
 }
-
